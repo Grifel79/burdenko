@@ -96,10 +96,10 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             {
 
                 //Make eyes visible
-                if (!leftEye.renderer.enabled)
-                    leftEye.renderer.enabled = true;
-                if (!rightEye.renderer.enabled)
-                    rightEye.renderer.enabled = true;
+                if (!leftEye.GetComponent<Renderer>().enabled)
+                    leftEye.GetComponent<Renderer>().enabled = true;
+                if (!rightEye.GetComponent<Renderer>().enabled)
+                    rightEye.GetComponent<Renderer>().enabled = true;
 
                 //Set eyes size based on distance
                 eyesDistance = gazeUtils.GetLastValidUserDistance();
@@ -133,10 +133,10 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         else
         {
             //Make eyes invisible eyes
-            if (leftEye.renderer.enabled)
-                leftEye.renderer.enabled = false;
-            if (rightEye.renderer.enabled)
-                rightEye.renderer.enabled = false;
+            if (leftEye.GetComponent<Renderer>().enabled)
+                leftEye.GetComponent<Renderer>().enabled = false;
+            if (rightEye.GetComponent<Renderer>().enabled)
+                rightEye.GetComponent<Renderer>().enabled = false;
         }
 
         lock (_callbackQueue)
@@ -413,7 +413,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         {
             r.enabled = isEnabled;
         }
-        go.renderer.enabled = isEnabled;
+        go.GetComponent<Renderer>().enabled = isEnabled;
     }
 
 

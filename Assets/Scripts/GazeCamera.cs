@@ -31,6 +31,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private GazeDataValidator gazeUtils;
 
+    private float timeLeft = 0.0f;
+    private float selection_time = 0.0f;
+    private bool selected = false;
+
+    private GazeData gazeDataCurr;
+
+
     void Start()
     {
         //Stay in landscape
@@ -45,16 +52,24 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
         //register for gaze updates
         GazeManager.Instance.AddGazeListener(this);
+
+        timeLeft = 30.0f;
     }
 
     public void OnGazeUpdate(GazeData gazeData)
     {
         //Add frame to GazeData cache handler
-        gazeUtils.Update(gazeData);
+
+
+
+        // gazeUtils.Update(gazeData);
+
+        gazeDataCurr = gazeData;
     }
 
     void Update()
     {
+        /*
         Point2D userPos = gazeUtils.GetLastValidUserPosition();
 
         if (null != userPos)
@@ -81,7 +96,18 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             cam.transform.eulerAngles = new Vector3(cam.transform.eulerAngles.x, cam.transform.eulerAngles.y, cam.transform.eulerAngles.z + (float)angle);
         }
 
-        Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
+        */
+
+        timeLeft -= Time.deltaTime;
+        if (timeLeft < 0)
+        {
+            Application.LoadLevel(0);
+        }
+
+        // trying to change this line because of issues with tracking
+        // Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
+
+        Point2D gazeCoords = gazeDataCurr.SmoothedCoordinates;
 
         if (null != gazeCoords)
         {
@@ -114,13 +140,43 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         RaycastHit hit;
         if (Physics.Raycast(collisionRay, out hit))
         {
+
+            if (currentHit == null || currentHit != hit.collider)
+            {
+                selection_time = 0.0f;
+            }
+            else if (currentHit != null || currentHit == hit.collider)
+            {
+                selection_time += Time.deltaTime;
+            }
+
+
             if (null != hit.collider && currentHit != hit.collider)
             {
                 //switch colors of cubes according to collision state
                 if (null != currentHit)
-                    currentHit.renderer.material.color = Color.white;
+                    currentHit.GetComponent<Renderer>().material.color = Color.white;
                 currentHit = hit.collider;
-                currentHit.renderer.material.color = Color.red;
+                if (selection_time > 1.0f)
+                    currentHit.GetComponent<Renderer>().material.color = Color.red;
+                else
+                    currentHit.GetComponent<Renderer>().material.color = Color.yellow;
+            }
+            else if (currentHit == hit.collider)
+            {
+                if (selection_time > 1.0f)
+                    currentHit.GetComponent<Renderer>().material.color = Color.red;
+            }
+        }
+        else //leave last object white if it is no more observed but still red
+        {
+            if (currentHit != null)
+            {
+                if (currentHit.GetComponent<Renderer>().material.color != Color.white)
+                {
+                    currentHit.GetComponent<Renderer>().material.color = Color.white;
+                }
+                currentHit = null;
             }
         }
     }
