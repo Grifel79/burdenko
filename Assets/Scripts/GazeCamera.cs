@@ -17,6 +17,8 @@ using Assets.Scripts;
 /// This script handles the navigation of the 'Main Camera' according to 
 /// the GazeData stream recieved by the EyeTribe Server.
 /// </summary>
+/// 
+
 public class GazeCamera : MonoBehaviour, IGazeListener
 {
     private Camera cam;
@@ -33,10 +35,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private float timeLeft = 0.0f;
     private float selection_time = 0.0f;
-    private bool selected = false;
-
-    private GazeData gazeDataCurr;
-
 
     void Start()
     {
@@ -59,12 +57,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     public void OnGazeUpdate(GazeData gazeData)
     {
         //Add frame to GazeData cache handler
-
-
-
-        // gazeUtils.Update(gazeData);
-
-        gazeDataCurr = gazeData;
+        
+        gazeUtils.Update(gazeData);
     }
 
     void Update()
@@ -104,19 +98,17 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             Application.LoadLevel(0);
         }
 
-        // trying to change this line because of issues with tracking
-        // Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
-
-        Point2D gazeCoords = gazeDataCurr.SmoothedCoordinates;
+        Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
 
         if (null != gazeCoords)
         {
             //map gaze indicator
-            Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);
+            Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
 
             Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
 
             Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+
             gazeIndicator.transform.position = planeCoord;
 
             //handle collision detection

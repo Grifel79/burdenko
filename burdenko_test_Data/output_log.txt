@@ -21,9 +21,7 @@ Platform assembly: C:\dev\burdenko\burdenko_test_Data\Managed\Newtonsoft.Json.dl
 Loading C:\dev\burdenko\burdenko_test_Data\Managed\Newtonsoft.Json.dll into Unity Child Domain
 Platform assembly: C:\dev\burdenko\burdenko_test_Data\Managed\TETCSharpClient.dll (this message is harmless)
 Loading C:\dev\burdenko\burdenko_test_Data\Managed\TETCSharpClient.dll into Unity Child Domain
-Platform assembly: C:\dev\burdenko\burdenko_test_Data\Managed\UnityEngine.UI.dll (this message is harmless)
-Loading C:\dev\burdenko\burdenko_test_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-- Completed reload, in  0.047 seconds
+- Completed reload, in  0.220 seconds
 <RI> Initializing input.
 XInput1_3.dll not found.
 <RI> Input initialized.
@@ -37,13 +35,14 @@ Platform assembly: C:\dev\burdenko\burdenko_test_Data\Managed\System.Runtime.Ser
 Platform assembly: C:\dev\burdenko\burdenko_test_Data\Managed\System.Xml.Linq.dll (this message is harmless)
 Platform assembly: C:\dev\burdenko\burdenko_test_Data\Managed\System.Data.dll (this message is harmless)
 Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 0.272300 ms
+UnloadTime: 0.314700 ms
 
 Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 217.
-Total: 0.589200 ms (FindLiveObjects: 0.014000 ms CreateObjectMapping: 0.036800 ms MarkObjects: 0.525700 ms  DeleteObjects: 0.006300 ms)
+Total: 0.565400 ms (FindLiveObjects: 0.013900 ms CreateObjectMapping: 0.012800 ms MarkObjects: 0.503800 ms  DeleteObjects: 0.006100 ms)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at GazeCamera.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.244900 ms
+
+Unloading 12 unused Assets to reduce memory usage. Loaded Objects now: 199.
+Total: 0.476000 ms (FindLiveObjects: 0.011200 ms CreateObjectMapping: 0.004900 ms MarkObjects: 0.429100 ms  DeleteObjects: 0.030300 ms)
 
