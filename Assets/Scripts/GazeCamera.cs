@@ -1,16 +1,11 @@
-﻿/*
- * Copyright (c) 2013-present, The Eye Tribe. 
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the LICENSE file in the root directory of this source tree. 
- *
- */
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using TETCSharpClient;
 using TETCSharpClient.Data;
 using Assets.Scripts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Component attached to 'Main Camera' of '/Scenes/std_scene.unity'.
@@ -33,13 +28,30 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private GazeDataValidator gazeUtils;
 
-    private float timeLeft = 0.0f;
-    private float selection_time = 0.0f;
+    private float timeLeft;
+    private float selection_time;
+    private float selection_threshold;
+
+    private GameObject bell;
+    private GameObject button;
+
+    private int bell_counter;
+
+    List<float> angles;
+    private int R;
 
     void Start()
     {
         //Stay in landscape
         Screen.autorotateToPortrait = false;
+
+        bell = GameObject.Find("Bell");
+        button = GameObject.Find("Button");
+
+        bell.transform.position = new Vector2(1, 0);
+
+        button.GetComponent<Renderer>().enabled = true;
+        bell.GetComponent<Renderer>().enabled = false;
 
         cam = GetComponent<Camera>();
         baseDist = cam.transform.position.z;
@@ -51,7 +63,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         //register for gaze updates
         GazeManager.Instance.AddGazeListener(this);
 
-        timeLeft = 30.0f;
+        timeLeft = 60.0f;
+        selection_threshold = 2.0f;
+
+        bell_counter = 0;
+
+        R = 2; // find how connect it to the screen resolution etc!
+        angles = new List<float> { 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f };
     }
 
     public void OnGazeUpdate(GazeData gazeData)
@@ -63,35 +81,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     void Update()
     {
-        /*
-        Point2D userPos = gazeUtils.GetLastValidUserPosition();
-
-        if (null != userPos)
-        {
-            //mapping cam panning to 3:2 aspect ratio
-            double tx = (userPos.X * 5) - 2.5f;
-            double ty = (userPos.Y * 3) - 1.5f;
-
-            //position camera X-Y plane and adjust distance
-            eyesDistance = gazeUtils.GetLastValidUserDistance();
-            depthMod = 2 * eyesDistance;
-
-            Vector3 newPos = new Vector3(
-                (float)tx,
-                (float)ty,
-                (float)(baseDist + depthMod));
-            cam.transform.position = newPos;
-
-            //camera 'look at' origo
-            cam.transform.LookAt(Vector3.zero);
-
-            //tilt cam according to eye angle
-            double angle = gazeUtils.GetLastValidEyesAngle();
-            cam.transform.eulerAngles = new Vector3(cam.transform.eulerAngles.x, cam.transform.eulerAngles.y, cam.transform.eulerAngles.z + (float)angle);
-        }
-
-        */
-
         timeLeft -= Time.deltaTime;
         if (timeLeft < 0)
         {
@@ -132,12 +121,12 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         RaycastHit hit;
         if (Physics.Raycast(collisionRay, out hit))
         {
-
+           
             if (currentHit == null || currentHit != hit.collider)
             {
                 selection_time = 0.0f;
             }
-            else if (currentHit != null || currentHit == hit.collider)
+            else if (currentHit != null && currentHit == hit.collider)
             {
                 selection_time += Time.deltaTime;
             }
@@ -149,15 +138,47 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 if (null != currentHit)
                     currentHit.GetComponent<Renderer>().material.color = Color.white;
                 currentHit = hit.collider;
-                if (selection_time > 1.0f)
+                if (selection_time > selection_threshold)
                     currentHit.GetComponent<Renderer>().material.color = Color.red;
                 else
                     currentHit.GetComponent<Renderer>().material.color = Color.yellow;
             }
             else if (currentHit == hit.collider)
             {
-                if (selection_time > 1.0f)
+                if (selection_time > selection_threshold)
+                {
+                    selection_time = 0.0f;
+
                     currentHit.GetComponent<Renderer>().material.color = Color.red;
+
+                    if (currentHit.gameObject.name == "Button")
+                    {
+                        // show bell in different circle locations by angles given as clock time from 0 to 12 
+
+                        float angle = 2 * (float) Math.PI * angles.ElementAt(bell_counter) / 12.0f;
+                        float x_pos = R * (float) Math.Sin(angle);
+                        float y_pos = R * (float) Math.Cos(angle);
+
+                        bell.transform.position = new Vector2(x_pos, y_pos);
+
+                        button.GetComponent<Renderer>().enabled = false;
+                        bell.GetComponent<Renderer>().enabled = true;
+
+                        button.GetComponent<AudioSource>().Play();
+                    }
+                    else if (currentHit.gameObject.name == "Bell")
+                    {
+                        bell.GetComponent<Renderer>().enabled = false;
+                        button.GetComponent<Renderer>().enabled = true;
+
+                        bell.GetComponent<AudioSource>().Play();
+
+                        bell_counter += 1;
+
+                        if (bell_counter == angles.Count)
+                            Application.LoadLevel(0);
+                    }
+                }
             }
         }
         else //leave last object white if it is no more observed but still red
