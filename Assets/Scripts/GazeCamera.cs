@@ -6,6 +6,10 @@ using Assets.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using UnityEngine.UI;
+
+
 
 /// <summary>
 /// Component attached to 'Main Camera' of '/Scenes/std_scene.unity'.
@@ -18,13 +22,10 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 {
     private Camera cam;
 
-    private double eyesDistance;
-    private double baseDist;
-    private double depthMod;
-
     private Component gazeIndicator;
 
     private Collider currentHit;
+    private Collider pressedHit;
 
     private GazeDataValidator gazeUtils;
 
@@ -32,30 +33,40 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     private float selection_time;
     private float selection_threshold;
 
+    private bool pressed;
+
     private GameObject bell;
     private GameObject button;
+    private GameObject game_end;
 
     private int bell_counter;
 
     List<float> angles;
     private int R;
 
+    // private ScreenCapture screen_capture;
+
     void Start()
     {
         //Stay in landscape
         Screen.autorotateToPortrait = false;
+        // screen_capture = new ScreenCapture();
 
         bell = GameObject.Find("Bell");
         button = GameObject.Find("Button");
+        game_end = GameObject.Find("GameEndText");
+        game_end.SetActive(false);
 
         bell.transform.position = new Vector2(1, 0);
 
-        button.GetComponent<Renderer>().enabled = true;
-        bell.GetComponent<Renderer>().enabled = false;
+        button.SetActive(true);
+        bell.SetActive(false);
+
+        pressed = false;
 
         cam = GetComponent<Camera>();
-        baseDist = cam.transform.position.z;
         gazeIndicator = cam.transform.GetChild(0);
+        currentHit = null;
 
         //initialising GazeData stabilizer
         gazeUtils = new GazeDataValidator(30);
@@ -69,7 +80,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         bell_counter = 0;
 
         R = 2; // find how connect it to the screen resolution etc!
-        angles = new List<float> { 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f };
+        angles = new List<float> { 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f };  // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
     }
 
     public void OnGazeUpdate(GazeData gazeData)
@@ -79,29 +90,45 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         gazeUtils.Update(gazeData);
     }
 
+    private void endGame()
+    {
+        if (!game_end.activeSelf)
+        {
+            button.SetActive(false);
+            bell.SetActive(false);
+            Text end_text = game_end.GetComponent<Text>();
+            end_text.text = "Congratulations! You have clicked on " + bell_counter.ToString() + " bells! Press Exit.";
+            game_end.SetActive(true);
+            //Application.LoadLevel(0);
+        }
+    }
+
     void Update()
     {
-        timeLeft -= Time.deltaTime;
         if (timeLeft < 0)
         {
-            Application.LoadLevel(0);
+            endGame();
         }
-
-        Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
-
-        if (null != gazeCoords)
+        else
         {
-            //map gaze indicator
-            Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
+            timeLeft -= Time.deltaTime;
 
-            Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
+            Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
 
-            Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+            if (null != gazeCoords)
+            {
+                //map gaze indicator
+                Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
 
-            gazeIndicator.transform.position = planeCoord;
+                Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
 
-            //handle collision detection
-            checkGazeCollision(screenPoint);
+                Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+
+                gazeIndicator.transform.position = planeCoord;
+
+                //handle collision detection
+                checkGazeCollision(screenPoint);
+            }
         }
 
         //handle keypress
@@ -117,79 +144,95 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private void checkGazeCollision(Vector3 screenPoint)
     {
-        Ray collisionRay = cam.ScreenPointToRay(screenPoint);
-        RaycastHit hit;
-        if (Physics.Raycast(collisionRay, out hit))
+
+        if (!pressed)
         {
-           
-            if (currentHit == null || currentHit != hit.collider)
+            Ray collisionRay = cam.ScreenPointToRay(screenPoint);
+            RaycastHit hit;
+            if (Physics.Raycast(collisionRay, out hit))     // wait for button press
             {
-                selection_time = 0.0f;
-            }
-            else if (currentHit != null && currentHit == hit.collider)
-            {
-                selection_time += Time.deltaTime;
-            }
 
-
-            if (null != hit.collider && currentHit != hit.collider)
-            {
-                //switch colors of cubes according to collision state
-                if (null != currentHit)
-                    currentHit.GetComponent<Renderer>().material.color = Color.white;
-                currentHit = hit.collider;
-                if (selection_time > selection_threshold)
-                    currentHit.GetComponent<Renderer>().material.color = Color.red;
-                else
-                    currentHit.GetComponent<Renderer>().material.color = Color.yellow;
-            }
-            else if (currentHit == hit.collider)
-            {
-                if (selection_time > selection_threshold)
+                // continue selection if the same object or put to zero if object was changed
+                if (currentHit == null || currentHit != hit.collider)
                 {
                     selection_time = 0.0f;
+                }
+                else if ((currentHit != null && currentHit == hit.collider))
+                {
+                    selection_time += Time.deltaTime;
+                }
 
-                    currentHit.GetComponent<Renderer>().material.color = Color.red;
-
-                    if (currentHit.gameObject.name == "Button")
+                if (hit.collider != null && currentHit != hit.collider)
+                {
+                    currentHit = hit.collider;
+                    currentHit.GetComponent<Renderer>().material.color = Color.green;
+                }
+                else if (currentHit == hit.collider)
+                {
+                    if (selection_time > selection_threshold - 0.5f) // 0.5 seconds for earlier signal start
                     {
-                        // show bell in different circle locations by angles given as clock time from 0 to 12 
+                        currentHit.GetComponent<Renderer>().material.color = Color.red;
 
-                        float angle = 2 * (float) Math.PI * angles.ElementAt(bell_counter) / 12.0f;
-                        float x_pos = R * (float) Math.Sin(angle);
-                        float y_pos = R * (float) Math.Cos(angle);
+                        if (currentHit.gameObject.name == "Button")
+                            button.GetComponent<AudioSource>().Play();
+                        else if (currentHit.gameObject.name == "Bell")
+                            bell.GetComponent<AudioSource>().Play();
 
-                        bell.transform.position = new Vector2(x_pos, y_pos);
+                        pressedHit = currentHit;
+                        pressed = true;
 
-                        button.GetComponent<Renderer>().enabled = false;
-                        bell.GetComponent<Renderer>().enabled = true;
-
-                        button.GetComponent<AudioSource>().Play();
+                        //print("Taking screenshot");
+                        //screen_capture.TakeScreenShot();
+                        //print("DONE");
                     }
-                    else if (currentHit.gameObject.name == "Bell")
+                }
+            }
+            else //leave last object white if it is no more observed but still red
+            {
+                if (currentHit != null)
+                {
+                    if (currentHit.GetComponent<Renderer>().material.color != Color.white)
                     {
-                        bell.GetComponent<Renderer>().enabled = false;
-                        button.GetComponent<Renderer>().enabled = true;
-
-                        bell.GetComponent<AudioSource>().Play();
-
-                        bell_counter += 1;
-
-                        if (bell_counter == angles.Count)
-                            Application.LoadLevel(0);
+                        currentHit.GetComponent<Renderer>().material.color = Color.white;
                     }
+                    currentHit = null;
                 }
             }
         }
-        else //leave last object white if it is no more observed but still red
+        else       // button was pressed - change buttons then
         {
-            if (currentHit != null)
+            selection_time += Time.deltaTime;
+            if (selection_time > selection_threshold)
             {
-                if (currentHit.GetComponent<Renderer>().material.color != Color.white)
+                if (pressedHit.gameObject.name == "Button")
                 {
-                    currentHit.GetComponent<Renderer>().material.color = Color.white;
+                    // show bell in different circle locations by angles given as clock time from 0 to 12 
+
+                    float angle = 2 * (float)Math.PI * angles.ElementAt(bell_counter) / 12.0f;
+                    float x_pos = R * (float)Math.Sin(angle);
+                    float y_pos = R * (float)Math.Cos(angle);
+
+                    bell.transform.position = new Vector2(x_pos, y_pos);
+
+                    button.SetActive(false);
+                    bell.SetActive(true);
                 }
-                currentHit = null;
+                else if (pressedHit.gameObject.name == "Bell")
+                {
+
+                    button.SetActive(true);
+                    bell.SetActive(false);
+
+                    bell_counter += 1;
+
+                    if (bell_counter == angles.Count)
+                    {
+                        endGame();
+                    }
+                }
+
+                selection_time = 0.0f;
+                pressed = false;
             }
         }
     }
@@ -201,14 +244,14 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         int btnHeight = 40;
         int y = padding;
 
-        if (GUI.Button(new Rect(padding, y, btnWidth, btnHeight), "Press to Exit"))
+        if (GUI.Button(new Rect(padding, y, btnWidth, btnHeight), "EXIT"))
         {
             Application.Quit();
         }
 
         y += padding + btnHeight;
 
-        if (GUI.Button(new Rect(padding, y, btnWidth, btnHeight), "Press to Re-calibrate"))
+        if (GUI.Button(new Rect(padding, y, btnWidth, btnHeight), "MENU"))
         {
             Application.LoadLevel(0);
         }
