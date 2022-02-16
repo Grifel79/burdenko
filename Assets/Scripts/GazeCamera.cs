@@ -30,9 +30,10 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private GazeDataValidator gazeUtils;
 
-    private float timeLeft;
+    private float timeLeft, last_click;
     private float selection_time;
     private float selection_threshold;
+    List<float> search_times;
 
     private bool pressed;
 
@@ -128,8 +129,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
         timeLeft = PlayerPrefs.GetFloat("GameTime");
         selection_threshold = PlayerPrefs.GetFloat("ClickTime");
-
-        print(timeLeft);
+        last_click = timeLeft;
+        search_times = new List<float>();   
 
         bell_counter = 0;
 
@@ -244,6 +245,31 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             Application.CaptureScreenshot(pathToImage);
 
             yield return new WaitForSeconds(0.2f);
+
+            // let's save search_times to csv
+
+            string csv_path = "C:\\Screenshots\\" + player + "\\search_times.csv";
+
+            TextWriter tw = new StreamWriter(csv_path);
+
+            // write a line of text to the file
+            tw.WriteLine("Объект клика, время (сек)");
+            string click_type = "";
+            for (int i = 0; i < search_times.Count; i++)
+            {
+                //print(search_times[i]);
+                
+                if (i % 2 == 0)
+                    click_type = "кнопка, ";
+                else
+                    click_type = "звонок, ";
+                tw.WriteLine(click_type + search_times[i]);
+            }
+
+            tw.WriteLine("среднее время, " + search_times.Average());  
+
+            // close the stream
+            tw.Close();
 
             ToggleBackground.GetComponent<Toggle>().isOn = false;
             BackGround.SetActive(false);
@@ -417,6 +443,10 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                 selection_time = 0.0f;
                 pressed = false;
+                float search_time = last_click - timeLeft;
+                print(search_time);
+                search_times.Add(search_time);
+                last_click = timeLeft;
             }
         }
     }
