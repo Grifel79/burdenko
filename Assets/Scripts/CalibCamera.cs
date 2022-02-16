@@ -5,6 +5,8 @@ using TETCSharpClient.Data;
 using Assets.Scripts;
 using System;
 using System.Collections.Generic;
+using UnityEngine.UI;
+
 
 /// <summary>
 /// Component attached to 'Main Camera' of '/Scenes/calib_scene.unity'.
@@ -13,6 +15,8 @@ using System.Collections.Generic;
 /// </summary>
 public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHandler
 {
+    [SerializeField] private UI_InputWindow inputWindow;
+
     private Camera cam;
 
     private GameObject leftEye;
@@ -36,6 +40,8 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     private const int NUM_MAX_RESAMPLE_POINTS = 4;
     private int resampleCount;
 
+    private GameObject start, exit, service, slider_gametime, slider_clicktime, TogglePoint, ToggleBackground, main_UI;
+    
     void Start()
     {
         //Stay in landscape
@@ -70,7 +76,128 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
         //register for gaze updates
         GazeManager.Instance.AddGazeListener(this);
+
+        main_UI = GameObject.Find("main_UI");
+
+        TogglePoint = GameObject.Find("TogglePoint");
+        ToggleBackground = GameObject.Find("ToggleBack");
+        TogglePoint.GetComponent<Toggle>().isOn = false;
+        ToggleBackground.GetComponent<Toggle>().isOn = false;
+
+        PlayerPrefs.SetInt("PointerActive", 0);
+        PlayerPrefs.SetInt("BackgroundActive", 0);
+
+        TogglePoint.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
+            TogglePointValueChanged();
+        });
+
+        ToggleBackground.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
+            ToggleBackgroundValueChanged();
+        });
+
+        start = GameObject.Find("Start_btn");
+        start.GetComponent<Button>().onClick.AddListener(StartClick);
+
+        exit = GameObject.Find("Exit_btn");
+        exit.GetComponent<Button>().onClick.AddListener(ExitClick);
+
+        service = GameObject.Find("Service_btn");
+        service.GetComponent<Button>().onClick.AddListener(ServiceClick);
+
+        slider_gametime = GameObject.Find("Slider_GameTime");
+        slider_clicktime = GameObject.Find("Slider_ClickTime");
+
+        float gametime = slider_gametime.GetComponent<Slider>().value;
+        PlayerPrefs.SetFloat("GameTime", gametime);
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время игры = " + gametime + " секунд(ы)";
+
+        float clicktime = slider_clicktime.GetComponent<Slider>().value;
+        clicktime /= 2;
+        PlayerPrefs.SetFloat("ClickTime", clicktime);
+        GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(ы)";
+
+        slider_gametime.GetComponent<Slider>().onValueChanged.AddListener(delegate { GameTimeChanged(); });
+        slider_clicktime.GetComponent<Slider>().onValueChanged.AddListener(delegate { ClickTimeChanged(); });
+
+        service.GetComponentInChildren<Text>().text = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
+
+        if (!GazeManager.Instance.IsActivated)
+        {
+            service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
+        }
     }
+
+    void StartClick()
+    {
+        if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
+        {
+            inputWindow.Show();
+            start.SetActive(false);
+            service.SetActive(false);
+        }
+    }
+
+    void ServiceClick()
+    {
+        if (!GazeManager.Instance.IsActivated)
+        {
+            GazeManager.Instance.Activate(GazeManager.ApiVersion.VERSION_1_0, GazeManager.ClientMode.Push);
+        }
+        else if (!GazeManager.Instance.IsCalibrating)
+        {
+
+            GenerateCalibrationPoints();
+            GazeManager.Instance.CalibrationStart(9, this);
+
+            if (!GazeManager.Instance.IsCalibrating)
+            {
+                print("problems");
+            }
+
+            //start.SetActive(false);
+            //service.SetActive(false);
+            //exit.SetActive(false);
+
+            main_UI.SetActive(false);
+        }
+    }
+
+    void ExitClick()
+    {
+        Application.Quit();
+    }
+
+    void GameTimeChanged()
+    {
+        float gametime = slider_gametime.GetComponent<Slider>().value;
+        PlayerPrefs.SetFloat("GameTime", gametime);
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время игры = "+ gametime + " секунд(ы)";
+    }
+
+    void ClickTimeChanged()
+    {
+        float clicktime = slider_clicktime.GetComponent<Slider>().value;
+        clicktime /= 2;
+        PlayerPrefs.SetFloat("ClickTime", clicktime);
+        GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(ы)";
+    }
+
+    void TogglePointValueChanged()
+    {
+        if (TogglePoint.GetComponent<Toggle>().isOn)
+            PlayerPrefs.SetInt("PointerActive", 1);
+        else
+            PlayerPrefs.SetInt("PointerActive", 0);
+    }
+
+    void ToggleBackgroundValueChanged()
+    {
+        if (ToggleBackground.GetComponent<Toggle>().isOn)
+            PlayerPrefs.SetInt("BackgroundActive", 1);
+        else
+            PlayerPrefs.SetInt("BackgroundActive", 0);
+    }
+
 
     public void OnGazeUpdate(GazeData gazeData)
     {
@@ -80,8 +207,22 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
     void Update()
     {
-        if (!GazeManager.Instance.IsCalibrating)
+        if (!inputWindow.active && !GazeManager.Instance.IsCalibrating)
         {
+
+            if (!GazeManager.Instance.IsActivated && !GazeManager.Instance.IsCalibrating)
+            {
+                service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
+            }
+            else if (!GazeManager.Instance.IsCalibrating)
+            {
+                if (service.activeSelf)
+                    service.GetComponentInChildren<Text>().text = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
+            }
+        }
+
+        if (!GazeManager.Instance.IsCalibrating)
+        {                
             Point2D userPos = gazeUtils.GetLastValidUserPosition();
 
             if (null != userPos)
@@ -145,98 +286,104 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         }
     }
 
-    void OnGUI()
-    {
-        //Setting up main menu GUI
-        int padding = 10;
-        int btnHeight;
-        int btnWidth;
+    //void OnGUI()
+    //{
+    //    //Setting up main menu GUI
+    //    int padding = 10;
+    //    int btnHeight;
+    //    int btnWidth;
 
-        int numBtns = 0;
-        if (!GazeManager.Instance.IsActivated)
-            ++numBtns;
-        if (!GazeManager.Instance.IsCalibrating)
-            ++numBtns;
-        if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
-            ++numBtns;
+    //    int numBtns = 0;
+    //    if (!GazeManager.Instance.IsActivated)
+    //        ++numBtns;
+    //    if (!GazeManager.Instance.IsCalibrating)
+    //        ++numBtns;
+    //    if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
+    //        ++numBtns;
 
-        if (numBtns > 0)
-        {
-            int width = (int)(Screen.width * .2f);
-            int height = (int)(Screen.height * .2f);
-            int btnPadding = (int)(height * .3f);
-            btnHeight = height - btnPadding - btnPadding;
-            btnWidth = width - btnPadding - btnPadding;
-            int x = (int)((Screen.width - width) / 2);
-            height = btnPadding + ((btnHeight + btnPadding) * numBtns); //adjust size to num btns
-            int y = (int)((Screen.height - height) / 2);
+    //    if (numBtns > 0 && !inputWindow.active)
+    //    {
+    //        int width = (int)(Screen.width * .2f);
+    //        int height = (int)(Screen.height * .2f);
+    //        int btnPadding = (int)(height * .3f);
+    //        btnHeight = height - btnPadding - btnPadding;
+    //        btnWidth = width - btnPadding - btnPadding;
+    //        int x = (int)((Screen.width - width) / 2);
+    //        height = btnPadding + ((btnHeight + btnPadding) * numBtns); //adjust size to num btns
+    //        int y = (int)((Screen.height - height) / 2);
 
-            string boxText = "The Eye Tribe - Unity Sample\n";
+    //        string boxText = "Госпиталь Бурденко\n";
 
-            //add calibration rating if available
-            if (GazeManager.Instance.IsCalibrated)
-            {
-                y += 10;
+    //        //add calibration rating if available
+    //        if (GazeManager.Instance.IsCalibrated)
+    //        {
+    //            y += 10;
 
-                string calibText;
-                int rating;
-                CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
-                CalibrationRatingFunction(result, out rating, out calibText);
-                boxText += "\nCalibration Result: " + calibText;
-            }
+    //            string calibText;
+    //            int rating;
+    //            CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
+    //            CalibrationRatingFunction(result, out rating, out calibText);
+    //            boxText += "\nРезультат калибровки: " + calibText;
+    //        }
 
-            GUI.Box(new Rect(x, y, width, height), boxText);
 
-            if (!GazeManager.Instance.IsActivated)
-            {
-                String btnText = "Reconnect to server";
+    //        GUI.Box(new Rect(x, y, width, height), boxText);
 
-                if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
-                {
-                    //activate C# TET client, default port
-                    GazeManager.Instance.Activate
-                    (
-                        GazeManager.ApiVersion.VERSION_1_0,
-                        GazeManager.ClientMode.Push
-                    );
-                }
+    //        y += 10;
 
-                y += (btnPadding + btnHeight);
-            }
+    //        if (!GazeManager.Instance.IsActivated)
+    //        {
+    //            String btnText = "Подключиться к серверу";
 
-            if (!GazeManager.Instance.IsCalibrating)
-            {
-                String btnText = GazeManager.Instance.IsCalibrated ? "Re-Calibrate" : "Calibrate";
+    //            if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
+    //            {
+    //                //activate C# TET client, default port
+    //                GazeManager.Instance.Activate
+    //                (
+    //                    GazeManager.ApiVersion.VERSION_1_0,
+    //                    GazeManager.ClientMode.Push
+    //                );
+    //            }
 
-                if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
-                {
-                    //Start new calibration
-                    GenerateCalibrationPoints();
-                    GazeManager.Instance.CalibrationStart(9, this);
-                }
+    //            y += (btnPadding + btnHeight);
+    //        }
 
-                y += (btnPadding + btnHeight);
-            }
+    //        if (!GazeManager.Instance.IsCalibrating)
+    //        {
+    //            String btnText = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
 
-            if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
-            {
-                String btnText = "Start GazeCam";
+    //            if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
+    //            {
+    //                //Start new calibration
+    //                GenerateCalibrationPoints();
+    //                GazeManager.Instance.CalibrationStart(9, this);
+    //            }
 
-                if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
-                {
-                    Application.LoadLevel(1);
-                }
-            }
-        }
+    //            y += (btnPadding + btnHeight);
+    //        }
 
-        btnWidth = 160;
-        btnHeight = 40;
+    //        if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
+    //        {
+    //            String btnText = "Начать игру";
 
-        if (GUI.Button(new Rect(padding, padding, btnWidth, btnHeight), "Press to Exit"))
-        {
-            Application.Quit();
-        }
-    }
+    //            if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
+    //            {
+    //                // Enter player name!!!
+    //                inputWindow.Show();
+
+    //                //Application.LoadLevel(1);
+    //            }
+    //        }
+    //    }
+
+    //    btnWidth = 160;
+    //    btnHeight = 40;
+
+    //    if (GUI.Button(new Rect(padding, padding, btnWidth, btnHeight), "ВЫХОД"))
+    //    {
+    //        Application.Quit();
+    //    }
+    //}
 
     void OnApplicationQuit()
     {
@@ -262,6 +409,17 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     public void OnCalibrationProcessing()
     {
         //Called when the calculation of the calibration results begins
+        QueueCallback(new Callback(delegate
+        {
+            //Application.LoadLevel(1);
+
+            //start.SetActive(true);
+            //service.SetActive(true);
+            //exit.SetActive(true);
+
+            main_UI.SetActive(true);
+
+        }));
     }
 
     public void OnCalibrationResult(CalibrationResult calibResult)
@@ -283,6 +441,18 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             {
                 calibrationPoints.Clear();
                 GazeManager.Instance.CalibrationAbort();
+
+                QueueCallback(new Callback(delegate
+                {
+                    //Application.LoadLevel(1);
+
+                    //start.SetActive(true);
+                    //service.SetActive(true);
+                    //exit.SetActive(true);
+
+                    main_UI.SetActive(true);
+                }));
+
                 return;
             }
 
@@ -294,10 +464,18 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         }
         else
         {
+            // don't start the game immediately!!!
+
             //Handle on main UI thread
             QueueCallback(new Callback(delegate
             {
-                Application.LoadLevel(1);
+                //Application.LoadLevel(1);
+
+                //start.SetActive(true);
+                //service.SetActive(true);
+                //exit.SetActive(true);
+
+                main_UI.SetActive(true);
             }));
         }
     }

@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine.UI;
-
-
+using System.IO;
 
 /// <summary>
 /// Component attached to 'Main Camera' of '/Scenes/std_scene.unity'.
@@ -20,6 +19,8 @@ using UnityEngine.UI;
 
 public class GazeCamera : MonoBehaviour, IGazeListener
 {
+    private bool game_active;
+
     private Camera cam;
 
     private Component gazeIndicator;
@@ -38,24 +39,62 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     private GameObject bell;
     private GameObject button;
     private GameObject game_end;
+    private GameObject TogglePoint;
+    private GameObject ToggleBackground;
+    private GameObject BackGround;
 
     private int bell_counter;
+
+    private LineRenderer line_renderer;
+    private List<Vector3> pos;
 
     List<float> angles;
     private int R;
 
-    // private ScreenCapture screen_capture;
+    private ScreenCapture screen_capture;
+
+    private string player;
 
     void Start()
     {
+        player = PlayerPrefs.GetString("Player name");
+
+        game_active = true;
         //Stay in landscape
         Screen.autorotateToPortrait = false;
-        // screen_capture = new ScreenCapture();
+        screen_capture = new ScreenCapture();
 
         bell = GameObject.Find("Bell");
         button = GameObject.Find("Button");
         game_end = GameObject.Find("GameEndText");
         game_end.SetActive(false);
+
+        bell.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
+        button.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
+
+        TogglePoint = GameObject.Find("TogglePoint");
+        ToggleBackground = GameObject.Find("ToggleBack");
+
+        TogglePoint.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
+            TogglePointValueChanged();
+        });
+
+        ToggleBackground.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
+            ToggleBackgroundValueChanged();
+        });
+
+        BackGround = GameObject.Find("background");
+
+        if (PlayerPrefs.GetInt("BackgroundActive") == 0)
+        {
+            ToggleBackground.GetComponent<Toggle>().isOn = false;
+            BackGround.SetActive(false);
+        } 
+        else if (PlayerPrefs.GetInt("BackgroundActive") == 1)
+        {
+            ToggleBackground.GetComponent<Toggle>().isOn = true;
+            BackGround.SetActive(true);
+        }
 
         bell.transform.position = new Vector2(1, 0);
 
@@ -66,6 +105,19 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
         cam = GetComponent<Camera>();
         gazeIndicator = cam.transform.GetChild(0);
+        gazeIndicator.GetComponent<Renderer>().enabled = false;
+
+        if (PlayerPrefs.GetInt("PointerActive") == 0)
+        {
+            TogglePoint.GetComponent<Toggle>().isOn = false;
+            gazeIndicator.GetComponent<Renderer>().enabled = false;
+        }
+        else if (PlayerPrefs.GetInt("PointerActive") == 1)
+        {
+            TogglePoint.GetComponent<Toggle>().isOn = true;
+            gazeIndicator.GetComponent<Renderer>().enabled = true;
+        }    
+
         currentHit = null;
 
         //initialising GazeData stabilizer
@@ -74,15 +126,36 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         //register for gaze updates
         GazeManager.Instance.AddGazeListener(this);
 
-        timeLeft = 60.0f;
-        selection_threshold = 2.0f;
+        timeLeft = PlayerPrefs.GetFloat("GameTime");
+        selection_threshold = PlayerPrefs.GetFloat("ClickTime");
+
+        print(timeLeft);
 
         bell_counter = 0;
 
         R = 2; // find how connect it to the screen resolution etc!
         angles = new List<float> { 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f };  // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
+
+        line_renderer = cam.transform.GetChild(0).GetComponent<LineRenderer>();
+        pos = new List<Vector3>();
+
+        Button menu = GameObject.Find("Menu_btn").GetComponent<Button>();
+        menu.onClick.AddListener(MenuClick);
+
+        Button exit = GameObject.Find("Exit_btn").GetComponent<Button>();
+        exit.onClick.AddListener(ExitClick);
+
     }
 
+    void MenuClick()
+    {
+        Application.LoadLevel(0);
+    }
+
+    void ExitClick()
+    {
+        Application.Quit();
+    }
     public void OnGazeUpdate(GazeData gazeData)
     {
         //Add frame to GazeData cache handler
@@ -90,16 +163,104 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         gazeUtils.Update(gazeData);
     }
 
-    private void endGame()
+    void TogglePointValueChanged()
     {
-        if (!game_end.activeSelf)
+        gazeIndicator.GetComponent<Renderer>().enabled = TogglePoint.GetComponent<Toggle>().isOn;
+    }
+
+    void ToggleBackgroundValueChanged()
+    {
+        BackGround.SetActive(ToggleBackground.GetComponent<Toggle>().isOn);
+    }
+
+    IEnumerator endGame()
+    {
+        if (game_active)
         {
+            game_active = false;
+            bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
+
+            List<GameObject>  bells = new List<GameObject>();
+
+            for (int i = 0; i < bell_counter; i++)
+            {
+                float angle = 2 * (float)Math.PI * angles.ElementAt(i) / 12.0f;
+                float x_pos = R * (float)Math.Sin(angle);
+                float y_pos = R * (float)Math.Cos(angle);
+
+                if (i == 0)
+                {
+                    bell.transform.position = new Vector2(x_pos, y_pos);
+                    bell.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
+                }
+                else
+                {
+                    GameObject bell_new = (GameObject)Instantiate(bell, new Vector3(x_pos, y_pos, 0), Quaternion.identity);
+                    bells.Add(bell_new);
+                } 
+            }
+
+            if (bell_counter == 0)
+                bell.SetActive(false);
+
+    
+            print(bell_counter);
+  
+            button.SetActive(true);
+            button.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
+
+            line_renderer.material = new Material(Shader.Find("Sprites/Default"));
+            line_renderer.SetColors(Color.blue, Color.blue);
+            line_renderer.SetVertexCount(pos.Count*2);
+            line_renderer.useWorldSpace = true;
+
+            line_renderer.SetWidth(0.001f, 0.001f);
+
+            line_renderer.sortingLayerName = "Foreground";
+
+            for (int i = 0; i < pos.Count; i++)
+            {
+                line_renderer.SetPosition(i, pos[i]);
+            }
+
+            for (int i = 0; i < pos.Count; i++)
+            {
+                line_renderer.SetPosition(pos.Count + i, pos[pos.Count - i - 1]);       // draws lines in backward direction to get normal lines in Unity 5 
+            }
+
+            if (!Directory.Exists("C:\\Screenshots\\" + player))
+            {
+                Directory.CreateDirectory("C:\\Screenshots\\" + player);
+            }
+
+            string pathToImage = "C:\\Screenshots\\" + player + "\\gaze_track.png";
+
+
+            if (File.Exists(pathToImage))
+                File.Delete(pathToImage);
+
+
+            // here screen is captured to get a gazetracking image
+            Application.CaptureScreenshot(pathToImage);
+
+            yield return new WaitForSeconds(0.2f);
+
+            ToggleBackground.GetComponent<Toggle>().isOn = false;
+            BackGround.SetActive(false);
+
+            line_renderer.SetVertexCount(0);
+
+            for (int i = 0; i < bells.Count; i++)
+            {
+                Destroy(bells.ElementAt(i));
+            }
+
             button.SetActive(false);
             bell.SetActive(false);
+
             Text end_text = game_end.GetComponent<Text>();
-            end_text.text = "Congratulations! You have clicked on " + bell_counter.ToString() + " bells! Press Exit.";
+            end_text.text = "Поздравляем! Число найденных колокольчиков: " + bell_counter.ToString() + " !";
             game_end.SetActive(true);
-            //Application.LoadLevel(0);
         }
     }
 
@@ -107,24 +268,51 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     {
         if (timeLeft < 0)
         {
-            endGame();
+            StartCoroutine(endGame());
         }
         else
         {
             timeLeft -= Time.deltaTime;
 
+            // not sure is it good to use GazeDataValidator. Maybe get coords directly is fine. Also if use it - smoothed or raw?
+
             Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
 
-            if (null != gazeCoords)
+
+            //print(gazeCoords);
+
+            if (gazeCoords != null)
             {
                 //map gaze indicator
+
+                //print("gazeCoords");
+                //print(gazeCoords.X);
+                //print(gazeCoords.Y);
+
                 Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
 
                 Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
 
+                //print("screenPoint");
+                //print(screenPoint.x);
+                //print(screenPoint.y);
+                //print(screenPoint.z);
+
                 Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
 
+                //print("planeCoord");
+                //print(planeCoord.x);
+                //print(planeCoord.y);
+                //print(planeCoord.z);
+
                 gazeIndicator.transform.position = planeCoord;
+
+                //print("gazeIndicator.transform.position");
+                //print(gazeIndicator.transform.position.x);
+                //print(gazeIndicator.transform.position.y);
+                //print(gazeIndicator.transform.position.z);
+
+                pos.Add(gazeIndicator.transform.position);
 
                 //handle collision detection
                 checkGazeCollision(screenPoint);
@@ -165,13 +353,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 if (hit.collider != null && currentHit != hit.collider)
                 {
                     currentHit = hit.collider;
-                    currentHit.GetComponent<Renderer>().material.color = Color.green;
+                    currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
                 }
                 else if (currentHit == hit.collider)
                 {
                     if (selection_time > selection_threshold - 0.5f) // 0.5 seconds for earlier signal start
                     {
-                        currentHit.GetComponent<Renderer>().material.color = Color.red;
+                        currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.red;
 
                         if (currentHit.gameObject.name == "Button")
                             button.GetComponent<AudioSource>().Play();
@@ -180,10 +368,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                         pressedHit = currentHit;
                         pressed = true;
-
-                        //print("Taking screenshot");
-                        //screen_capture.TakeScreenShot();
-                        //print("DONE");
                     }
                 }
             }
@@ -191,9 +375,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             {
                 if (currentHit != null)
                 {
-                    if (currentHit.GetComponent<Renderer>().material.color != Color.white)
+                    if (currentHit.GetComponent<Renderer>().material.color != UnityEngine.Color.clear)
                     {
-                        currentHit.GetComponent<Renderer>().material.color = Color.white;
+                        currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
                     }
                     currentHit = null;
                 }
@@ -227,7 +411,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                     if (bell_counter == angles.Count)
                     {
-                        endGame();
+                        StartCoroutine(endGame());
                     }
                 }
 
@@ -237,28 +421,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         }
     }
 
-    void OnGUI()
-    {
-        int padding = 10;
-        int btnWidth = 160;
-        int btnHeight = 40;
-        int y = padding;
-
-        if (GUI.Button(new Rect(padding, y, btnWidth, btnHeight), "EXIT"))
-        {
-            Application.Quit();
-        }
-
-        y += padding + btnHeight;
-
-        if (GUI.Button(new Rect(padding, y, btnWidth, btnHeight), "MENU"))
-        {
-            Application.LoadLevel(0);
-        }
-    }
-
     void OnApplicationQuit()
     {
         GazeManager.Instance.RemoveGazeListener(this);
     }
 }
+    
