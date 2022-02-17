@@ -40,8 +40,14 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     private const int NUM_MAX_RESAMPLE_POINTS = 4;
     private int resampleCount;
 
-    private GameObject start, exit, service, slider_gametime, slider_clicktime, TogglePoint, ToggleBackground, main_UI;
-    
+    private GameObject start, exit, service, slider_gametime, slider_clicktime, TogglePoint, ToggleBackground, calib_result, main_UI;
+
+    //            string calibText;
+    //            int rating;
+    //            CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
+    //            CalibrationRatingFunction(result, out rating, out calibText);
+    //            boxText += "\nРезультат калибровки: " + calibText;
+
     void Start()
     {
         //Stay in landscape
@@ -94,6 +100,17 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         ToggleBackground.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
             ToggleBackgroundValueChanged();
         });
+
+        calib_result = GameObject.Find("CalibResult");
+
+        if (GazeManager.Instance.IsCalibrated)
+        {
+            string calibText;
+            int rating;
+            CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
+            CalibrationRatingFunction(result, out rating, out calibText);
+            calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
+        }
 
         start = GameObject.Find("Start_btn");
         start.GetComponent<Button>().onClick.AddListener(StartClick);
@@ -207,59 +224,62 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
     void Update()
     {
-        if (!inputWindow.active && !GazeManager.Instance.IsCalibrating)
+        if (main_UI.activeSelf)
         {
-
-            if (!GazeManager.Instance.IsActivated && !GazeManager.Instance.IsCalibrating)
-            {
-                service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
-            }
-            else if (!GazeManager.Instance.IsCalibrating)
-            {
-                if (service.activeSelf)
-                    service.GetComponentInChildren<Text>().text = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
-            }
-        }
-
-        if (!GazeManager.Instance.IsCalibrating)
-        {                
-            Point2D userPos = gazeUtils.GetLastValidUserPosition();
-
-            if (null != userPos)
+            if (!inputWindow.active && !GazeManager.Instance.IsCalibrating)
             {
 
-                //Make eyes visible
-                if (!leftEye.GetComponent<Renderer>().enabled)
-                    leftEye.GetComponent<Renderer>().enabled = true;
-                if (!rightEye.GetComponent<Renderer>().enabled)
-                    rightEye.GetComponent<Renderer>().enabled = true;
-
-                //Set eyes size based on distance
-                eyesDistance = gazeUtils.GetLastValidUserDistance();
-                depthMod = eyesDistance * .5f;
-                Vector3 scaleVec = new Vector3((float)(depthMod), (float)(depthMod), (float)eyeBaseScale.z);
-
-                Eye left = gazeUtils.GetLastValidLeftEye();
-                Eye right = gazeUtils.GetLastValidRightEye();
-
-                double angle = gazeUtils.GetLastValidEyesAngle();
-
-                if (null != left)
+                if (!GazeManager.Instance.IsActivated && !GazeManager.Instance.IsCalibrating)
                 {
-                    //position GO based on screen coordinates
-                    Point2D gp = UnityGazeUtils.getRelativeToScreenSpace(left.PupilCenterCoordinates);
-                    PositionGOFromScreenCoords(leftEye, gp);
-                    leftEye.transform.localScale = scaleVec;
-                    leftEye.transform.eulerAngles = new Vector3(leftEye.transform.eulerAngles.x, leftEye.transform.eulerAngles.y, (float)angle);
+                    service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
                 }
-
-                if (null != right)
+                else if (!GazeManager.Instance.IsCalibrating)
                 {
-                    //position GO based on screen coordinates
-                    Point2D gp = UnityGazeUtils.getRelativeToScreenSpace(right.PupilCenterCoordinates);
-                    PositionGOFromScreenCoords(rightEye, gp);
-                    rightEye.transform.localScale = scaleVec;
-                    rightEye.transform.eulerAngles = new Vector3(rightEye.transform.eulerAngles.x, rightEye.transform.eulerAngles.y, (float)angle);
+                    if (service.activeSelf)
+                        service.GetComponentInChildren<Text>().text = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
+                }
+            }
+
+            if (!GazeManager.Instance.IsCalibrating)
+            {
+                Point2D userPos = gazeUtils.GetLastValidUserPosition();
+
+                if (null != userPos)
+                {
+
+                    //Make eyes visible
+                    if (!leftEye.GetComponent<Renderer>().enabled)
+                        leftEye.GetComponent<Renderer>().enabled = true;
+                    if (!rightEye.GetComponent<Renderer>().enabled)
+                        rightEye.GetComponent<Renderer>().enabled = true;
+
+                    //Set eyes size based on distance
+                    eyesDistance = gazeUtils.GetLastValidUserDistance();
+                    depthMod = eyesDistance * .5f;
+                    Vector3 scaleVec = new Vector3((float)(depthMod), (float)(depthMod), (float)eyeBaseScale.z);
+
+                    Eye left = gazeUtils.GetLastValidLeftEye();
+                    Eye right = gazeUtils.GetLastValidRightEye();
+
+                    double angle = gazeUtils.GetLastValidEyesAngle();
+
+                    if (null != left)
+                    {
+                        //position GO based on screen coordinates
+                        Point2D gp = UnityGazeUtils.getRelativeToScreenSpace(left.PupilCenterCoordinates);
+                        PositionGOFromScreenCoords(leftEye, gp);
+                        leftEye.transform.localScale = scaleVec;
+                        leftEye.transform.eulerAngles = new Vector3(leftEye.transform.eulerAngles.x, leftEye.transform.eulerAngles.y, (float)angle);
+                    }
+
+                    if (null != right)
+                    {
+                        //position GO based on screen coordinates
+                        Point2D gp = UnityGazeUtils.getRelativeToScreenSpace(right.PupilCenterCoordinates);
+                        PositionGOFromScreenCoords(rightEye, gp);
+                        rightEye.transform.localScale = scaleVec;
+                        rightEye.transform.eulerAngles = new Vector3(rightEye.transform.eulerAngles.x, rightEye.transform.eulerAngles.y, (float)angle);
+                    }
                 }
             }
         }
@@ -286,105 +306,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         }
     }
 
-    //void OnGUI()
-    //{
-    //    //Setting up main menu GUI
-    //    int padding = 10;
-    //    int btnHeight;
-    //    int btnWidth;
-
-    //    int numBtns = 0;
-    //    if (!GazeManager.Instance.IsActivated)
-    //        ++numBtns;
-    //    if (!GazeManager.Instance.IsCalibrating)
-    //        ++numBtns;
-    //    if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
-    //        ++numBtns;
-
-    //    if (numBtns > 0 && !inputWindow.active)
-    //    {
-    //        int width = (int)(Screen.width * .2f);
-    //        int height = (int)(Screen.height * .2f);
-    //        int btnPadding = (int)(height * .3f);
-    //        btnHeight = height - btnPadding - btnPadding;
-    //        btnWidth = width - btnPadding - btnPadding;
-    //        int x = (int)((Screen.width - width) / 2);
-    //        height = btnPadding + ((btnHeight + btnPadding) * numBtns); //adjust size to num btns
-    //        int y = (int)((Screen.height - height) / 2);
-
-    //        string boxText = "Госпиталь Бурденко\n";
-
-    //        //add calibration rating if available
-    //        if (GazeManager.Instance.IsCalibrated)
-    //        {
-    //            y += 10;
-
-    //            string calibText;
-    //            int rating;
-    //            CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
-    //            CalibrationRatingFunction(result, out rating, out calibText);
-    //            boxText += "\nРезультат калибровки: " + calibText;
-    //        }
-
-
-    //        GUI.Box(new Rect(x, y, width, height), boxText);
-
-    //        y += 10;
-
-    //        if (!GazeManager.Instance.IsActivated)
-    //        {
-    //            String btnText = "Подключиться к серверу";
-
-    //            if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
-    //            {
-    //                //activate C# TET client, default port
-    //                GazeManager.Instance.Activate
-    //                (
-    //                    GazeManager.ApiVersion.VERSION_1_0,
-    //                    GazeManager.ClientMode.Push
-    //                );
-    //            }
-
-    //            y += (btnPadding + btnHeight);
-    //        }
-
-    //        if (!GazeManager.Instance.IsCalibrating)
-    //        {
-    //            String btnText = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
-
-    //            if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
-    //            {
-    //                //Start new calibration
-    //                GenerateCalibrationPoints();
-    //                GazeManager.Instance.CalibrationStart(9, this);
-    //            }
-
-    //            y += (btnPadding + btnHeight);
-    //        }
-
-    //        if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
-    //        {
-    //            String btnText = "Начать игру";
-
-    //            if (GUI.Button(new Rect(x + btnPadding, y + btnPadding, btnWidth, btnHeight), btnText))
-    //            {
-    //                // Enter player name!!!
-    //                inputWindow.Show();
-
-    //                //Application.LoadLevel(1);
-    //            }
-    //        }
-    //    }
-
-    //    btnWidth = 160;
-    //    btnHeight = 40;
-
-    //    if (GUI.Button(new Rect(padding, padding, btnWidth, btnHeight), "ВЫХОД"))
-    //    {
-    //        Application.Quit();
-    //    }
-    //}
-
     void OnApplicationQuit()
     {
         GazeManager.Instance.CalibrationAbort();
@@ -408,18 +329,31 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
     public void OnCalibrationProcessing()
     {
+
+        // After this calibration can continue - so i commented everything...
+
         //Called when the calculation of the calibration results begins
-        QueueCallback(new Callback(delegate
-        {
-            //Application.LoadLevel(1);
+        //QueueCallback(new Callback(delegate
+        //{
+        //    //Application.LoadLevel(1);
 
-            //start.SetActive(true);
-            //service.SetActive(true);
-            //exit.SetActive(true);
+        //    //start.SetActive(true);
+        //    //service.SetActive(true);
+        //    //exit.SetActive(true);
 
-            main_UI.SetActive(true);
+        //    main_UI.SetActive(true);
+        //    if (GazeManager.Instance.IsCalibrated)
+        //    {
+        //        string calibText;
+        //        int rating;
+        //        CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
+        //        CalibrationRatingFunction(result, out rating, out calibText);
+        //        print(result);
+        //        print(calibText);
+        //        calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
+        //    }
 
-        }));
+        //}));
     }
 
     public void OnCalibrationResult(CalibrationResult calibResult)
@@ -451,6 +385,17 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
                     //exit.SetActive(true);
 
                     main_UI.SetActive(true);
+                    if (GazeManager.Instance.IsCalibrated)
+                    {
+                        string calibText;
+                        int rating;
+                        CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
+                        CalibrationRatingFunction(result, out rating, out calibText);
+                        print(result);
+                        print(calibText);
+                        calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
+                    }
+
                 }));
 
                 return;
@@ -476,6 +421,16 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
                 //exit.SetActive(true);
 
                 main_UI.SetActive(true);
+                if (GazeManager.Instance.IsCalibrated)
+                {
+                    string calibText;
+                    int rating;
+                    CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
+                    CalibrationRatingFunction(result, out rating, out calibText);
+                    print(result);
+                    print(calibText);
+                    calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
+                }
             }));
         }
     }
@@ -598,35 +553,35 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         if (result == null)
         {
             rating = -1;
-            strRating = "ERROR";
+            strRating = "Ошибка";
+            return;
+        }
+        if (result.AverageErrorDegree < 0.2)
+        {
+            rating = 5;
+            strRating = "Отличная (5 из 5)";
             return;
         }
         if (result.AverageErrorDegree < 0.5)
         {
-            rating = 5;
-            strRating = "PERFECT";
+            rating = 4;
+            strRating = "Хорошая (4 из 5)";
             return;
         }
         if (result.AverageErrorDegree < 0.7)
         {
-            rating = 4;
-            strRating = "GOOD";
+            rating = 3;
+            strRating = "Удовлетворительная (3 из 5)";
             return;
         }
         if (result.AverageErrorDegree < 1)
         {
-            rating = 3;
-            strRating = "MODERATE";
-            return;
-        }
-        if (result.AverageErrorDegree < 1.5)
-        {
             rating = 2;
-            strRating = "POOR";
+            strRating = "Плохая (2 из 5)";
             return;
         }
         rating = 1;
-        strRating = "REDO";
+        strRating = "Переделать!";
     }
 
     /// <summary>

@@ -229,17 +229,27 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 line_renderer.SetPosition(pos.Count + i, pos[pos.Count - i - 1]);       // draws lines in backward direction to get normal lines in Unity 5 
             }
 
-            if (!Directory.Exists("C:\\Screenshots\\" + player))
+            string dir = "C:\\Screenshots\\" + player;
+
+            if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory("C:\\Screenshots\\" + player);
+                Directory.CreateDirectory(dir);
             }
 
-            string pathToImage = "C:\\Screenshots\\" + player + "\\gaze_track.png";
+            string datetime = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
+            string exp_dir = dir + "\\" + datetime;
 
+            print(exp_dir);
 
-            if (File.Exists(pathToImage))
-                File.Delete(pathToImage);
+            if (!Directory.Exists(exp_dir))
+            {
+                print("directory creation code");
+                Directory.CreateDirectory(exp_dir);
+            }
 
+            string pathToImage = exp_dir + "\\" + player + "_" + datetime + ".png";
+
+            print(pathToImage);
 
             // here screen is captured to get a gazetracking image
             Application.CaptureScreenshot(pathToImage);
@@ -248,7 +258,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             // let's save search_times to csv
 
-            string csv_path = "C:\\Screenshots\\" + player + "\\search_times.csv";
+            string csv_path = exp_dir + "\\" + player + "_" + datetime + ".csv";
+
+            print(csv_path);
 
             TextWriter tw = new StreamWriter(csv_path);
 
@@ -258,11 +270,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             for (int i = 0; i < search_times.Count; i++)
             {
                 //print(search_times[i]);
+
+                int num = i / 2 + 1;
                 
                 if (i % 2 == 0)
-                    click_type = "кнопка, ";
+                    click_type = "кнопка " + num.ToString() + ", ";
                 else
-                    click_type = "звонок, ";
+                    click_type = "звонок " + num.ToString() + ", ";
                 tw.WriteLine(click_type + search_times[i]);
             }
 
