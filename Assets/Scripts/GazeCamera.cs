@@ -37,12 +37,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private bool pressed;
 
-    private GameObject bell;
-    private GameObject button;
-    private GameObject game_end;
-    private GameObject TogglePoint;
-    private GameObject ToggleBackground;
-    private GameObject BackGround;
+    private GameObject bell, button, game_end, TogglePoint, ToggleBackground, BackGround, game_UI;
 
     private int bell_counter;
 
@@ -65,13 +60,15 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         Screen.autorotateToPortrait = false;
         screen_capture = new ScreenCapture();
 
+        game_UI = GameObject.Find("game_UI");
+
         bell = GameObject.Find("Bell");
         button = GameObject.Find("Button");
         game_end = GameObject.Find("GameEndText");
         game_end.SetActive(false);
 
-        bell.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
-        button.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
+        bell.GetComponent<Renderer>().material.color = UnityEngine.Color.yellow;
+        button.GetComponent<Renderer>().material.color = UnityEngine.Color.yellow;
 
         TogglePoint = GameObject.Find("TogglePoint");
         ToggleBackground = GameObject.Find("ToggleBack");
@@ -146,6 +143,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         Button exit = GameObject.Find("Exit_btn").GetComponent<Button>();
         exit.onClick.AddListener(ExitClick);
 
+        game_UI.SetActive(false);
     }
 
     void MenuClick()
@@ -166,12 +164,14 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     void TogglePointValueChanged()
     {
-        gazeIndicator.GetComponent<Renderer>().enabled = TogglePoint.GetComponent<Toggle>().isOn;
+            gazeIndicator.GetComponent<Renderer>().enabled = TogglePoint.GetComponent<Toggle>().isOn;
+            print("TogglePointValueChanged");
     }
 
     void ToggleBackgroundValueChanged()
     {
-        BackGround.SetActive(ToggleBackground.GetComponent<Toggle>().isOn);
+            BackGround.SetActive(ToggleBackground.GetComponent<Toggle>().isOn);
+            print("ToggleBackgroundValueChanged");
     }
 
     IEnumerator endGame()
@@ -179,6 +179,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         if (game_active)
         {
             game_active = false;
+            game_UI.SetActive(false);
+
             bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
 
             List<GameObject>  bells = new List<GameObject>();
@@ -280,10 +282,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 tw.WriteLine(click_type + search_times[i]);
             }
 
-            tw.WriteLine("среднее время, " + search_times.Average());  
+            if (search_times.Count > 1)
+                tw.WriteLine("среднее время, " + search_times.Average());  
 
             // close the stream
             tw.Close();
+
+            game_UI.SetActive(true);
 
             ToggleBackground.GetComponent<Toggle>().isOn = false;
             BackGround.SetActive(false);
@@ -364,9 +369,19 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         {
             Application.Quit();
         }
-        else if (Input.GetKey(KeyCode.Space))
+        else if (Input.GetKeyDown(KeyCode.Space))
         {
-            Application.LoadLevel(0);
+            //Application.LoadLevel(0);
+            if (game_active)
+            {
+                if (game_UI.activeSelf)
+                    game_UI.SetActive(false);
+                else
+                    game_UI.SetActive(true);
+            }
+
+            print(gazeIndicator.GetComponent<Renderer>().enabled);
+                
         }
     }
 
@@ -415,9 +430,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             {
                 if (currentHit != null)
                 {
-                    if (currentHit.GetComponent<Renderer>().material.color != UnityEngine.Color.clear)
+                    if (currentHit.GetComponent<Renderer>().material.color != UnityEngine.Color.yellow)
                     {
-                        currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
+                        currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.yellow;
                     }
                     currentHit = null;
                 }
