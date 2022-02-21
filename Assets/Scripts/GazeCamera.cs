@@ -166,13 +166,11 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     void TogglePointValueChanged()
     {
             gazeIndicator.GetComponent<Renderer>().enabled = TogglePoint.GetComponent<Toggle>().isOn;
-            print("TogglePointValueChanged");
     }
 
     void ToggleBackgroundValueChanged()
     {
             BackGround.SetActive(ToggleBackground.GetComponent<Toggle>().isOn);
-            print("ToggleBackgroundValueChanged");
     }
 
     IEnumerator endGame()
@@ -206,9 +204,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             if (bell_counter == 0)
                 bell.SetActive(false);
-
-    
-            print(bell_counter);
   
             button.SetActive(true);
             button.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
@@ -228,12 +223,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 float d = dist.magnitude;
                 if (d > 0.1)
                 {
-                    print(d);
                     saccade_counter += 1;
                 }    
             }
-
-            print(saccade_counter);
 
             for (int i = 0; i < pos.Count; i++)
             {
@@ -255,17 +247,12 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             string datetime = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
             string exp_dir = dir + "\\" + datetime;
 
-            print(exp_dir);
-
             if (!Directory.Exists(exp_dir))
             {
-                print("directory creation code");
                 Directory.CreateDirectory(exp_dir);
             }
 
             string pathToImage = exp_dir + "\\" + player + "_" + datetime + ".png";
-
-            print(pathToImage);
 
             // here screen is captured to get a gazetracking image
             Application.CaptureScreenshot(pathToImage);
@@ -276,16 +263,12 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             string csv_path = exp_dir + "\\" + player + "_" + datetime + ".csv";
 
-            print(csv_path);
-
             TextWriter tw = new StreamWriter(csv_path);
 
-            // write a line of text to the file
             tw.WriteLine("Объект клика, время (сек)");
             string click_type = "";
             for (int i = 0; i < search_times.Count; i++)
             {
-                //print(search_times[i]);
 
                 int num = i / 2 + 1;
                 
@@ -340,39 +323,17 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
 
-
-            //print(gazeCoords);
-
             if (gazeCoords != null)
             {
                 //map gaze indicator
-
-                //print("gazeCoords");
-                //print(gazeCoords.X);
-                //print(gazeCoords.Y);
 
                 Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
 
                 Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
 
-                //print("screenPoint");
-                //print(screenPoint.x);
-                //print(screenPoint.y);
-                //print(screenPoint.z);
-
                 Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
 
-                //print("planeCoord");
-                //print(planeCoord.x);
-                //print(planeCoord.y);
-                //print(planeCoord.z);
-
                 gazeIndicator.transform.position = planeCoord;
-
-                //print("gazeIndicator.transform.position");
-                //print(gazeIndicator.transform.position.x);
-                //print(gazeIndicator.transform.position.y);
-                //print(gazeIndicator.transform.position.z);
 
                 pos.Add(planeCoord);
 
@@ -388,17 +349,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {
-            //Application.LoadLevel(0);
             if (game_active)
             {
                 if (game_UI.activeSelf)
                     game_UI.SetActive(false);
                 else
                     game_UI.SetActive(true);
-            }
-
-            print(gazeIndicator.GetComponent<Renderer>().enabled);
-                
+            }   
         }
     }
 
@@ -490,7 +447,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 selection_time = 0.0f;
                 pressed = false;
                 float search_time = last_click - timeLeft - selection_threshold;
-                print(search_time);
                 search_times.Add(search_time);
                 last_click = timeLeft;
             }

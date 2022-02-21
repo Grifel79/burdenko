@@ -42,12 +42,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
     private GameObject start, exit, service, slider_gametime, slider_clicktime, TogglePoint, ToggleBackground, calib_result, main_UI;
 
-    //            string calibText;
-    //            int rating;
-    //            CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
-    //            CalibrationRatingFunction(result, out rating, out calibText);
-    //            boxText += "\nРезультат калибровки: " + calibText;
-
     void Start()
     {
         //Stay in landscape
@@ -166,15 +160,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             GenerateCalibrationPoints();
             GazeManager.Instance.CalibrationStart(9, this);
 
-            if (!GazeManager.Instance.IsCalibrating)
-            {
-                print("problems");
-            }
-
-            //start.SetActive(false);
-            //service.SetActive(false);
-            //exit.SetActive(false);
-
             main_UI.SetActive(false);
         }
     }
@@ -188,7 +173,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     {
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
-        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = "+ gametime + " секунд(ы)";
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы    = "+ gametime + " секунд(ы)";
     }
 
     void ClickTimeChanged()
@@ -331,29 +316,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     {
 
         // After this calibration can continue - so i commented everything...
-
-        //Called when the calculation of the calibration results begins
-        //QueueCallback(new Callback(delegate
-        //{
-        //    //Application.LoadLevel(1);
-
-        //    //start.SetActive(true);
-        //    //service.SetActive(true);
-        //    //exit.SetActive(true);
-
-        //    main_UI.SetActive(true);
-        //    if (GazeManager.Instance.IsCalibrated)
-        //    {
-        //        string calibText;
-        //        int rating;
-        //        CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
-        //        CalibrationRatingFunction(result, out rating, out calibText);
-        //        print(result);
-        //        print(calibText);
-        //        calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
-        //    }
-
-        //}));
     }
 
     public void OnCalibrationResult(CalibrationResult calibResult)
@@ -378,11 +340,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
                 QueueCallback(new Callback(delegate
                 {
-                    //Application.LoadLevel(1);
-
-                    //start.SetActive(true);
-                    //service.SetActive(true);
-                    //exit.SetActive(true);
 
                     main_UI.SetActive(true);
                     if (GazeManager.Instance.IsCalibrated)
@@ -391,8 +348,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
                         int rating;
                         CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
                         CalibrationRatingFunction(result, out rating, out calibText);
-                        print(result);
-                        print(calibText);
                         calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
                     }
 
@@ -414,11 +369,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             //Handle on main UI thread
             QueueCallback(new Callback(delegate
             {
-                //Application.LoadLevel(1);
-
-                //start.SetActive(true);
-                //service.SetActive(true);
-                //exit.SetActive(true);
 
                 main_UI.SetActive(true);
                 if (GazeManager.Instance.IsCalibrated)
@@ -427,8 +377,6 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
                     int rating;
                     CalibrationResult result = GazeManager.Instance.LastCalibrationResult;
                     CalibrationRatingFunction(result, out rating, out calibText);
-                    print(result);
-                    print(calibText);
                     calib_result.GetComponent<Text>().text = "Результат калибровки: " + calibText;
                 }
             }));
