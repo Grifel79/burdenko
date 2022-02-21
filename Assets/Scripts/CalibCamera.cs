@@ -126,7 +126,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
-        GameObject.Find("GameTime").GetComponent<Text>().text = "Время игры = " + gametime + " секунд(ы)";
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = " + gametime + " секунд(ы)";
 
         float clicktime = slider_clicktime.GetComponent<Slider>().value;
         clicktime /= 2;
@@ -188,7 +188,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     {
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
-        GameObject.Find("GameTime").GetComponent<Text>().text = "Время игры = "+ gametime + " секунд(ы)";
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = "+ gametime + " секунд(ы)";
     }
 
     void ClickTimeChanged()
