@@ -39,7 +39,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private GameObject bell, button, game_end, TogglePoint, ToggleBackground, BackGround, game_UI;
 
-    private int bell_counter;
+    private int bell_counter, saccade_counter;
 
     private LineRenderer line_renderer;
     private List<Vector3> pos;
@@ -67,8 +67,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         game_end = GameObject.Find("GameEndText");
         game_end.SetActive(false);
 
-        bell.GetComponent<Renderer>().material.color = UnityEngine.Color.yellow;
-        button.GetComponent<Renderer>().material.color = UnityEngine.Color.yellow;
+        bell.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
+        button.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
 
         TogglePoint = GameObject.Find("TogglePoint");
         ToggleBackground = GameObject.Find("ToggleBack");
@@ -130,6 +130,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         search_times = new List<float>();   
 
         bell_counter = 0;
+        saccade_counter = 0;
 
         R = 2; // find how connect it to the screen resolution etc!
         angles = new List<float> { 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f };  // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
@@ -221,6 +222,19 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             line_renderer.sortingLayerName = "Foreground";
 
+            for (int i = 1; i < pos.Count; i++)
+            {
+                Vector2 dist = new Vector2(pos[i].x - pos[i-1].x, pos[i].y - pos[i - 1].y);
+                float d = dist.magnitude;
+                if (d > 0.1)
+                {
+                    print(d);
+                    saccade_counter += 1;
+                }    
+            }
+
+            print(saccade_counter);
+
             for (int i = 0; i < pos.Count; i++)
             {
                 line_renderer.SetPosition(i, pos[i]);
@@ -283,7 +297,10 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             }
 
             if (search_times.Count > 1)
-                tw.WriteLine("среднее время, " + search_times.Average());  
+                tw.WriteLine("среднее время, " + search_times.Average());
+
+            tw.WriteLine("число саккад, " + saccade_counter);
+
 
             // close the stream
             tw.Close();
@@ -357,7 +374,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 //print(gazeIndicator.transform.position.y);
                 //print(gazeIndicator.transform.position.z);
 
-                pos.Add(gazeIndicator.transform.position);
+                pos.Add(planeCoord);
 
                 //handle collision detection
                 checkGazeCollision(screenPoint);
@@ -430,9 +447,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             {
                 if (currentHit != null)
                 {
-                    if (currentHit.GetComponent<Renderer>().material.color != UnityEngine.Color.yellow)
+                    if (currentHit.GetComponent<Renderer>().material.color != UnityEngine.Color.clear)
                     {
-                        currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.yellow;
+                        currentHit.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
                     }
                     currentHit = null;
                 }
@@ -472,7 +489,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                 selection_time = 0.0f;
                 pressed = false;
-                float search_time = last_click - timeLeft;
+                float search_time = last_click - timeLeft - selection_threshold;
                 print(search_time);
                 search_times.Add(search_time);
                 last_click = timeLeft;
