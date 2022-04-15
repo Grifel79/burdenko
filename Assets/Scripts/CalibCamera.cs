@@ -173,7 +173,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     {
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
-        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы    = "+ gametime + " секунд(ы)";
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = "+ gametime + " секунд(ы)";
     }
 
     void ClickTimeChanged()
@@ -504,25 +504,25 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             strRating = "Ошибка";
             return;
         }
-        if (result.AverageErrorDegree < 0.2)
+        if (result.AverageErrorDegree < 0.5)
         {
             rating = 5;
             strRating = "Отличная (5 из 5)";
             return;
         }
-        if (result.AverageErrorDegree < 0.5)
+        if (result.AverageErrorDegree < 0.7)
         {
             rating = 4;
             strRating = "Хорошая (4 из 5)";
             return;
         }
-        if (result.AverageErrorDegree < 0.7)
+        if (result.AverageErrorDegree < 1.0)
         {
             rating = 3;
             strRating = "Удовлетворительная (3 из 5)";
             return;
         }
-        if (result.AverageErrorDegree < 1)
+        if (result.AverageErrorDegree < 1.5)
         {
             rating = 2;
             strRating = "Плохая (2 из 5)";

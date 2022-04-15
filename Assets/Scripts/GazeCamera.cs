@@ -87,7 +87,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         {
             ToggleBackground.GetComponent<Toggle>().isOn = false;
             BackGround.SetActive(false);
-        } 
+        }
         else if (PlayerPrefs.GetInt("BackgroundActive") == 1)
         {
             ToggleBackground.GetComponent<Toggle>().isOn = true;
@@ -114,7 +114,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         {
             TogglePoint.GetComponent<Toggle>().isOn = true;
             gazeIndicator.GetComponent<Renderer>().enabled = true;
-        }    
+        }
 
         currentHit = null;
 
@@ -127,13 +127,21 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         timeLeft = PlayerPrefs.GetFloat("GameTime");
         selection_threshold = PlayerPrefs.GetFloat("ClickTime");
         last_click = timeLeft;
-        search_times = new List<float>();   
+        search_times = new List<float>();
 
         bell_counter = 0;
         saccade_counter = 0;
 
         R = 2; // find how connect it to the screen resolution etc!
-        angles = new List<float> { 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f };  // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
+        // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
+
+        if (!BackGround.activeSelf)
+            angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
+        else
+            angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 12.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
+
+        //1st version bells
+        // 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f
 
         line_renderer = cam.transform.GetChild(0).GetComponent<LineRenderer>();
         pos = new List<Vector3>();
@@ -186,7 +194,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             for (int i = 0; i < bell_counter; i++)
             {
-                float angle = 2 * (float)Math.PI * angles.ElementAt(i) / 12.0f;
+                int position = i % angles.Count;
+
+                float angle = 2 * (float)Math.PI * angles.ElementAt(position) / 12.0f;
                 float x_pos = R * (float)Math.Sin(angle);
                 float y_pos = R * (float)Math.Cos(angle);
 
@@ -421,7 +431,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 {
                     // show bell in different circle locations by angles given as clock time from 0 to 12 
 
-                    float angle = 2 * (float)Math.PI * angles.ElementAt(bell_counter) / 12.0f;
+                    int position = bell_counter % angles.Count;
+                    float angle = 2 * (float)Math.PI * angles.ElementAt(position) / 12.0f;
+
                     float x_pos = R * (float)Math.Sin(angle);
                     float y_pos = R * (float)Math.Cos(angle);
 
@@ -438,10 +450,11 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                     bell_counter += 1;
 
-                    if (bell_counter == angles.Count)
-                    {
-                        StartCoroutine(endGame());
-                    }
+                   // now bells position are repeated in a loop
+                   // if (bell_counter == angles.Count)
+                   // {
+                   //     StartCoroutine(endGame());
+                   // }
                 }
 
                 selection_time = 0.0f;
