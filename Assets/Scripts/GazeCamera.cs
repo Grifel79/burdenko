@@ -55,7 +55,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     {
         player = PlayerPrefs.GetString("Player name");
 
-        game_active = true;
+        game_active = false;
         //Stay in landscape
         Screen.autorotateToPortrait = false;
         screen_capture = new ScreenCapture();
@@ -125,6 +125,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         GazeManager.Instance.AddGazeListener(this);
 
         timeLeft = PlayerPrefs.GetFloat("GameTime");
+        timeLeft *= 60;
         selection_threshold = PlayerPrefs.GetFloat("ClickTime");
         last_click = timeLeft;
         search_times = new List<float>();
@@ -283,9 +284,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 int num = i / 2 + 1;
                 
                 if (i % 2 == 0)
-                    click_type = "кнопка " + num.ToString() + ", ";
-                else
                     click_type = "звонок " + num.ToString() + ", ";
+                else
+                    click_type = "кнопка " + num.ToString() + ", ";
                 tw.WriteLine(click_type + search_times[i]);
             }
 
@@ -327,7 +328,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         }
         else
         {
-            timeLeft -= Time.deltaTime;
+            if (game_active)
+                timeLeft -= Time.deltaTime;
 
             // not sure is it good to use GazeDataValidator. Maybe get coords directly is fine. Also if use it - smoothed or raw?
 
@@ -459,9 +461,15 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                 selection_time = 0.0f;
                 pressed = false;
-                float search_time = last_click - timeLeft - selection_threshold;
-                search_times.Add(search_time);
-                last_click = timeLeft;
+
+                if (game_active)
+                {
+                    float search_time = last_click - timeLeft - selection_threshold;
+                    search_times.Add(search_time);
+                    last_click = timeLeft;
+                }
+
+                game_active = true;
             }
         }
     }
