@@ -120,12 +120,12 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
-        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = " + gametime + " секунд(ы)";
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = " + gametime + " минут(а/ы)";
 
         float clicktime = slider_clicktime.GetComponent<Slider>().value;
         clicktime /= 2;
         PlayerPrefs.SetFloat("ClickTime", clicktime);
-        GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(ы)";
+        GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(а/ы)";
 
         slider_gametime.GetComponent<Slider>().onValueChanged.AddListener(delegate { GameTimeChanged(); });
         slider_clicktime.GetComponent<Slider>().onValueChanged.AddListener(delegate { ClickTimeChanged(); });
@@ -173,7 +173,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     {
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
-        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = "+ gametime + " секунд(ы)";
+        GameObject.Find("GameTime").GetComponent<Text>().text = "Время работы = "+ gametime + " минут(а/ы)";
     }
 
     void ClickTimeChanged()
@@ -181,7 +181,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         float clicktime = slider_clicktime.GetComponent<Slider>().value;
         clicktime /= 2;
         PlayerPrefs.SetFloat("ClickTime", clicktime);
-        GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(ы)";
+        GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(а/ы)";
     }
 
     void TogglePointValueChanged()

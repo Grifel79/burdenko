@@ -55,7 +55,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     {
         player = PlayerPrefs.GetString("Player name");
 
-        game_active = false;
+        game_active = true;
         //Stay in landscape
         Screen.autorotateToPortrait = false;
         screen_capture = new ScreenCapture();
@@ -74,7 +74,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         ToggleBackground = GameObject.Find("ToggleBack");
 
         TogglePoint.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
-            TogglePointValueChanged();
+            TogglePointValueChanged();  
         });
 
         ToggleBackground.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
@@ -284,13 +284,18 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             string click_type = "";
             for (int i = 0; i < search_times.Count; i++)
             {
-
-                int num = i / 2 + 1;
-                
-                if (i % 2 == 0)
-                    click_type = "звонок " + num.ToString() + ", ";
+                if (i == 0)
+                    click_type = "кнопка 0" + ", ";
                 else
-                    click_type = "кнопка " + num.ToString() + ", ";
+                {
+                    int num = (i-1) / 2 + 1;
+
+                    if ((i - 1) % 2 == 0)
+                        click_type = "звонок " + num.ToString() + ", ";
+                    else
+                        click_type = "кнопка " + num.ToString() + ", ";
+                }
+
                 tw.WriteLine(click_type + search_times[i]);
             }
 
@@ -332,8 +337,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         }
         else
         {
-            if (game_active)
-                timeLeft -= Time.deltaTime;
+            timeLeft -= Time.deltaTime;
 
             // not sure is it good to use GazeDataValidator. Maybe get coords directly is fine. Also if use it - smoothed or raw?
 
@@ -470,14 +474,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 selection_time = 0.0f;
                 pressed = false;
 
-                if (game_active)
-                {
-                    float search_time = last_click - timeLeft - selection_threshold;
-                    search_times.Add(search_time);
-                    last_click = timeLeft;
-                }
-
-                game_active = true;
+                float search_time = last_click - timeLeft - selection_threshold;
+                search_times.Add(search_time);
+                last_click = timeLeft;
             }
         }
     }
