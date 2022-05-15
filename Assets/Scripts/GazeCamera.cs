@@ -42,7 +42,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     private int bell_counter, saccade_counter;
 
     private LineRenderer line_renderer;
-    private List<List<Vector3>> pos;
+    private List<Vector3> pos;
 
     List<float> angles;
     private int R;
@@ -74,7 +74,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         ToggleBackground = GameObject.Find("ToggleBack");
 
         TogglePoint.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
-            TogglePointValueChanged();  
+            TogglePointValueChanged();
         });
 
         ToggleBackground.GetComponent<Toggle>().onValueChanged.AddListener(delegate {
@@ -125,7 +125,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         GazeManager.Instance.AddGazeListener(this);
 
         timeLeft = PlayerPrefs.GetFloat("GameTime");
-        timeLeft *= 60;
         selection_threshold = PlayerPrefs.GetFloat("ClickTime");
         last_click = timeLeft;
         search_times = new List<float>();
@@ -134,7 +133,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         saccade_counter = 0;
 
         R = 2; // find how connect it to the screen resolution etc!
-        // bell's angular positions in hours from 0 to 12 hours. Total 19 positions!
+        // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
 
         if (!BackGround.activeSelf)
             angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
@@ -145,7 +144,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         // 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f
 
         line_renderer = cam.transform.GetChild(0).GetComponent<LineRenderer>();
-        pos = new List<List<Vector3>>();
+        pos = new List<Vector3>();
 
         Button menu = GameObject.Find("Menu_btn").GetComponent<Button>();
         menu.onClick.AddListener(MenuClick);
@@ -189,30 +188,15 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             game_active = false;
             game_UI.SetActive(false);
 
-            // Directory creation
-
-            string dir = "C:\\Screenshots\\" + player;
-
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            string datetime = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
-            string exp_dir = dir + "\\" + datetime;
-
-            if (!Directory.Exists(exp_dir))
-            {
-                Directory.CreateDirectory(exp_dir);
-            }
-
             bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
 
             List<GameObject>  bells = new List<GameObject>();
 
-            for (int i = 0; i < angles.Count; i++)
+            for (int i = 0; i < bell_counter; i++)
             {
-                float angle = 2 * (float)Math.PI * angles.ElementAt(i) / 12.0f;
+                int position = i % angles.Count;
+
+                float angle = 2 * (float)Math.PI * angles.ElementAt(position) / 12.0f;
                 float x_pos = R * (float)Math.Sin(angle);
                 float y_pos = R * (float)Math.Cos(angle);
 
@@ -234,45 +218,56 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             button.SetActive(true);
             button.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
 
-            for (int j = 0; j < pos.Count; j++)
+            line_renderer.material = new Material(Shader.Find("Sprites/Default"));
+            line_renderer.SetColors(Color.blue, Color.blue);
+            line_renderer.SetVertexCount(pos.Count*2);
+            line_renderer.useWorldSpace = true;
+
+            line_renderer.SetWidth(0.001f, 0.001f);
+
+            line_renderer.sortingLayerName = "Foreground";
+
+            for (int i = 1; i < pos.Count; i++)
             {
-
-                line_renderer.material = new Material(Shader.Find("Sprites/Default"));
-                line_renderer.SetColors(Color.blue, Color.blue);
-                line_renderer.SetVertexCount(pos[j].Count * 2);
-                line_renderer.useWorldSpace = true;
-
-                line_renderer.SetWidth(0.001f, 0.001f);
-
-                line_renderer.sortingLayerName = "Foreground";
-
-                for (int i = 1; i < pos[j].Count; i++)
+                Vector2 dist = new Vector2(pos[i].x - pos[i-1].x, pos[i].y - pos[i - 1].y);
+                float d = dist.magnitude;
+                if (d > 0.1)
                 {
-                    Vector2 dist = new Vector2(pos[j][i].x - pos[j][i - 1].x, pos[j][i].y - pos[j][i - 1].y);
-                    float d = dist.magnitude;
-                    if (d > 0.1)
-                    {
-                        saccade_counter += 1;
-                    }
-                }
-
-                for (int i = 0; i < pos[j].Count; i++)
-                {
-                    line_renderer.SetPosition(i, pos[j][i]);
-                }
-
-                for (int i = 0; i < pos[j].Count; i++)
-                {
-                    line_renderer.SetPosition(pos[j].Count + i, pos[j][pos[j].Count - i - 1]);       // draws lines in backward direction to get normal lines in Unity 5 
-                }
-
-                string pathToImage = exp_dir + "\\" + player + "_" + datetime + "_" + j + ".png";
-
-                // here screen is captured to get a gazetracking image
-                Application.CaptureScreenshot(pathToImage);
-
-                yield return new WaitForSeconds(0.2f);
+                    saccade_counter += 1;
+                }    
             }
+
+            for (int i = 0; i < pos.Count; i++)
+            {
+                line_renderer.SetPosition(i, pos[i]);
+            }
+
+            for (int i = 0; i < pos.Count; i++)
+            {
+                line_renderer.SetPosition(pos.Count + i, pos[pos.Count - i - 1]);       // draws lines in backward direction to get normal lines in Unity 5 
+            }
+
+            string dir = "C:\\Screenshots\\" + player;
+
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            string datetime = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
+            string exp_dir = dir + "\\" + datetime;
+
+            if (!Directory.Exists(exp_dir))
+            {
+                Directory.CreateDirectory(exp_dir);
+            }
+
+            string pathToImage = exp_dir + "\\" + player + "_" + datetime + ".png";
+
+            // here screen is captured to get a gazetracking image
+            Application.CaptureScreenshot(pathToImage);
+
+            yield return new WaitForSeconds(0.2f);
 
             // let's save search_times to csv
 
@@ -284,18 +279,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             string click_type = "";
             for (int i = 0; i < search_times.Count; i++)
             {
-                if (i == 0)
-                    click_type = "кнопка 0" + ", ";
+
+                int num = i / 2 + 1;
+                
+                if (i % 2 == 0)
+                    click_type = "кнопка " + num.ToString() + ", ";
                 else
-                {
-                    int num = (i-1) / 2 + 1;
-
-                    if ((i - 1) % 2 == 0)
-                        click_type = "звонок " + num.ToString() + ", ";
-                    else
-                        click_type = "кнопка " + num.ToString() + ", ";
-                }
-
+                    click_type = "звонок " + num.ToString() + ", ";
                 tw.WriteLine(click_type + search_times[i]);
             }
 
@@ -355,8 +345,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                 gazeIndicator.transform.position = planeCoord;
 
-                int s = bell_counter / angles.Count;
-                pos[s].Add(planeCoord);
+                pos.Add(planeCoord);
 
                 //handle collision detection
                 checkGazeCollision(screenPoint);
@@ -461,19 +450,15 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                     bell_counter += 1;
 
-                    if (bell_counter == angles.Count)
-                        pos.Add(new List<Vector3>());
-
-                    // now bells position are repeated in a loop
-                    // if (bell_counter == angles.Count)
-                    // {
-                    //     StartCoroutine(endGame());
-                    // }
+                   // now bells position are repeated in a loop
+                   // if (bell_counter == angles.Count)
+                   // {
+                   //     StartCoroutine(endGame());
+                   // }
                 }
 
                 selection_time = 0.0f;
                 pressed = false;
-
                 float search_time = last_click - timeLeft - selection_threshold;
                 search_times.Add(search_time);
                 last_click = timeLeft;
