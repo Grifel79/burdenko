@@ -40,6 +40,8 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     private const int NUM_MAX_RESAMPLE_POINTS = 4;
     private int resampleCount;
 
+    private bool mouse_control;
+
     private GameObject start, exit, service, slider_gametime, slider_clicktime, TogglePoint, ToggleBackground, calib_result, main_UI;
 
     void Start()
@@ -136,12 +138,23 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         {
             service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
         }
+
+        mouse_control = false;
+        PlayerPrefs.SetInt("mouse_control", 0);
     }
 
     void StartClick()
     {
         if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
         {
+            inputWindow.Show();
+            start.SetActive(false);
+            service.SetActive(false);
+        }
+        else
+        {
+            mouse_control = true;
+            PlayerPrefs.SetInt("mouse_control", 1);
             inputWindow.Show();
             start.SetActive(false);
             service.SetActive(false);

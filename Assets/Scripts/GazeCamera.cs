@@ -51,6 +51,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private string player;
 
+    private bool mouse_control;
+
     void Start()
     {
         player = PlayerPrefs.GetString("Player name");
@@ -153,6 +155,12 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         exit.onClick.AddListener(ExitClick);
 
         game_UI.SetActive(false);
+
+        int mouse = PlayerPrefs.GetInt("mouse_control");
+        if (mouse == 0)
+            mouse_control = false;
+        else if (mouse == 1)
+            mouse_control = true;
     }
 
     void MenuClick()
@@ -331,15 +339,36 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             // not sure is it good to use GazeDataValidator. Maybe get coords directly is fine. Also if use it - smoothed or raw?
 
-            Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
+            // add mouse control!
 
-            if (gazeCoords != null)
+            if (!mouse_control)
             {
-                //map gaze indicator
+                Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
 
-                Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
+                if (gazeCoords != null)
+                {
+                    //map gaze indicator
 
-                Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
+                    Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
+
+                    Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
+
+                    Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+
+                    gazeIndicator.transform.position = planeCoord;
+
+                    pos.Add(planeCoord);
+
+                    //handle collision detection
+                    checkGazeCollision(screenPoint);
+                }
+            }
+            else
+            {
+
+                Vector3 mousePos = Input.mousePosition;
+
+                Vector3 screenPoint = new Vector3((float)mousePos.x, (float)mousePos.y, cam.nearClipPlane + .1f);
 
                 Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
 
@@ -350,6 +379,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 //handle collision detection
                 checkGazeCollision(screenPoint);
             }
+
+
         }
 
         //handle keypress
