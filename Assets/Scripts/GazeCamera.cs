@@ -42,7 +42,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     private int bell_counter, saccade_counter;
 
     private LineRenderer line_renderer;
-    private List<Vector3> pos;
+    private List<List<Vector3>> pos;
 
     List<float> angles;
     private int R;
@@ -127,6 +127,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         GazeManager.Instance.AddGazeListener(this);
 
         timeLeft = PlayerPrefs.GetFloat("GameTime");
+        timeLeft *= 60;
         selection_threshold = PlayerPrefs.GetFloat("ClickTime");
         last_click = timeLeft;
         search_times = new List<float>();
@@ -135,7 +136,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         saccade_counter = 0;
 
         R = 2; // find how connect it to the screen resolution etc!
-        // bell's angular positions in hours from 0 to 12 hours. Total 24 positions!
+        // bell's angular positions in hours from 0 to 12 hours. Total 19 positions!
 
         if (!BackGround.activeSelf)
             angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
@@ -146,7 +147,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         // 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f
 
         line_renderer = cam.transform.GetChild(0).GetComponent<LineRenderer>();
-        pos = new List<Vector3>();
+        pos = new List<List<Vector3>>();
+        pos.Add(new List<Vector3>());
 
         Button menu = GameObject.Find("Menu_btn").GetComponent<Button>();
         menu.onClick.AddListener(MenuClick);
@@ -196,64 +198,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             game_active = false;
             game_UI.SetActive(false);
 
-            bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
-
-            List<GameObject>  bells = new List<GameObject>();
-
-            for (int i = 0; i < bell_counter; i++)
-            {
-                int position = i % angles.Count;
-
-                float angle = 2 * (float)Math.PI * angles.ElementAt(position) / 12.0f;
-                float x_pos = R * (float)Math.Sin(angle);
-                float y_pos = R * (float)Math.Cos(angle);
-
-                if (i == 0)
-                {
-                    bell.transform.position = new Vector2(x_pos, y_pos);
-                    bell.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
-                }
-                else
-                {
-                    GameObject bell_new = (GameObject)Instantiate(bell, new Vector3(x_pos, y_pos, 0), Quaternion.identity);
-                    bells.Add(bell_new);
-                } 
-            }
-
-            if (bell_counter == 0)
-                bell.SetActive(false);
-  
-            button.SetActive(true);
-            button.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
-
-            line_renderer.material = new Material(Shader.Find("Sprites/Default"));
-            line_renderer.SetColors(Color.blue, Color.blue);
-            line_renderer.SetVertexCount(pos.Count*2);
-            line_renderer.useWorldSpace = true;
-
-            line_renderer.SetWidth(0.001f, 0.001f);
-
-            line_renderer.sortingLayerName = "Foreground";
-
-            for (int i = 1; i < pos.Count; i++)
-            {
-                Vector2 dist = new Vector2(pos[i].x - pos[i-1].x, pos[i].y - pos[i - 1].y);
-                float d = dist.magnitude;
-                if (d > 0.1)
-                {
-                    saccade_counter += 1;
-                }    
-            }
-
-            for (int i = 0; i < pos.Count; i++)
-            {
-                line_renderer.SetPosition(i, pos[i]);
-            }
-
-            for (int i = 0; i < pos.Count; i++)
-            {
-                line_renderer.SetPosition(pos.Count + i, pos[pos.Count - i - 1]);       // draws lines in backward direction to get normal lines in Unity 5 
-            }
+            // let's save search_times to csv
 
             string dir = "C:\\Screenshots\\" + player;
 
@@ -270,30 +215,22 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 Directory.CreateDirectory(exp_dir);
             }
 
-            string pathToImage = exp_dir + "\\" + player + "_" + datetime + ".png";
-
-            // here screen is captured to get a gazetracking image
-            Application.CaptureScreenshot(pathToImage);
-
-            yield return new WaitForSeconds(0.2f);
-
-            // let's save search_times to csv
-
             string csv_path = exp_dir + "\\" + player + "_" + datetime + ".csv";
 
             TextWriter tw = new StreamWriter(csv_path);
 
             tw.WriteLine("Объект клика, время (сек)");
             string click_type = "";
-            for (int i = 0; i < search_times.Count; i++)
+            tw.WriteLine("кнопка 0, " + search_times[0]);
+            for (int i = 1; i < search_times.Count; i++)
             {
 
-                int num = i / 2 + 1;
-                
-                if (i % 2 == 0)
-                    click_type = "кнопка " + num.ToString() + ", ";
-                else
+                int num = (i - 1) / 2 + 1;
+
+                if ((i - 1) % 2 == 0)
                     click_type = "звонок " + num.ToString() + ", ";
+                else
+                    click_type = "кнопка " + num.ToString() + ", ";
                 tw.WriteLine(click_type + search_times[i]);
             }
 
@@ -306,20 +243,95 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             // close the stream
             tw.Close();
 
+            // loop to draw several trajectories if needed
+
+            for (int s = 0; s < pos.Count; s++)
+            {
+                bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
+                List<GameObject> bells = new List<GameObject>();
+
+                int bell_draw = angles.Count;
+                if (s == pos.Count - 1)
+                    bell_draw = bell_counter % angles.Count;
+
+                for (int i = 0; i < bell_draw; i++)
+                {
+                    int position = i % angles.Count;
+
+                    float angle = 2 * (float)Math.PI * angles.ElementAt(position) / 12.0f;
+                    float x_pos = R * (float)Math.Sin(angle);
+                    float y_pos = R * (float)Math.Cos(angle);
+
+                    if (i == 0)
+                    {
+                        bell.transform.position = new Vector2(x_pos, y_pos);
+                        bell.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
+                    }
+                    else
+                    {
+                        GameObject bell_new = (GameObject)Instantiate(bell, new Vector3(x_pos, y_pos, 0), Quaternion.identity);
+                        bells.Add(bell_new);
+                    }
+                }
+
+                if (bell_counter == 0)
+                    bell.SetActive(false);
+
+                button.SetActive(true);
+                button.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
+
+                line_renderer.material = new Material(Shader.Find("Sprites/Default"));
+                line_renderer.SetColors(Color.blue, Color.blue);
+                line_renderer.SetVertexCount(pos[s].Count * 2);
+                line_renderer.useWorldSpace = true;
+
+                line_renderer.SetWidth(0.001f, 0.001f);
+
+                line_renderer.sortingLayerName = "Foreground";
+
+                for (int i = 1; i < pos[s].Count; i++)
+                {
+                    Vector2 dist = new Vector2(pos[s][i].x - pos[s][i - 1].x, pos[s][i].y - pos[s][i - 1].y);
+                    float d = dist.magnitude;
+                    if (d > 0.1)
+                    {
+                        saccade_counter += 1;
+                    }
+                }
+
+                for (int i = 0; i < pos[s].Count; i++)
+                {
+                    line_renderer.SetPosition(i, pos[s][i]);
+                }
+
+                for (int i = 0; i < pos[s].Count; i++)
+                {
+                    line_renderer.SetPosition(pos[s].Count + i, pos[s][pos[s].Count - i - 1]);       // draws lines in backward direction to get normal lines in Unity 5 
+                }
+
+                string pathToImage = exp_dir + "\\" + player + "_" + datetime + "_" + s.ToString() + ".png";
+
+                // here screen is captured to get a gazetracking image
+                Application.CaptureScreenshot(pathToImage);
+
+                yield return new WaitForSeconds(0.2f);  // do i need it???
+
+                line_renderer.SetVertexCount(0);
+
+                for (int i = 0; i < bells.Count; i++)
+                {
+                    Destroy(bells.ElementAt(i));
+                }
+
+                button.SetActive(false);
+                bell.SetActive(false);
+
+            }
+
             game_UI.SetActive(true);
 
             ToggleBackground.GetComponent<Toggle>().isOn = false;
             BackGround.SetActive(false);
-
-            line_renderer.SetVertexCount(0);
-
-            for (int i = 0; i < bells.Count; i++)
-            {
-                Destroy(bells.ElementAt(i));
-            }
-
-            button.SetActive(false);
-            bell.SetActive(false);
 
             Text end_text = game_end.GetComponent<Text>();
             end_text.text = "Поздравляем! Число найденных колокольчиков: " + bell_counter.ToString() + " !";
@@ -329,6 +341,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     void Update()
     {
+        int bell_set = (bell_counter - 1) / 19;
+
         if (timeLeft < 0)
         {
             StartCoroutine(endGame());
@@ -357,7 +371,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                     gazeIndicator.transform.position = planeCoord;
 
-                    pos.Add(planeCoord);
+                    pos[bell_set].Add(planeCoord);
 
                     //handle collision detection
                     checkGazeCollision(screenPoint);
@@ -374,7 +388,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                 gazeIndicator.transform.position = planeCoord;
 
-                pos.Add(planeCoord);
+                pos[bell_set].Add(planeCoord);
 
                 //handle collision detection
                 checkGazeCollision(screenPoint);
@@ -472,6 +486,10 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                     button.SetActive(false);
                     bell.SetActive(true);
+
+                    if (bell_counter % 19 == 0 && bell_counter!=0)
+                        pos.Add(new List<Vector3>());
+
                 }
                 else if (pressedHit.gameObject.name == "Bell")
                 {
