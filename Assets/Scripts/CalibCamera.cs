@@ -423,10 +423,10 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             SetRendererEnabled(calibPointGO, true);
 
             //short delay allowing eye to settle before sampling
-            Invoke("sampleCalibrationPoint", .5f);
+            Invoke("sampleCalibrationPoint", 1.0f);
 
             //call pause after sampling
-            Invoke("shortDelay", 2.0f);
+            Invoke("shortDelay", 3.0f);
         }
     }   
 
