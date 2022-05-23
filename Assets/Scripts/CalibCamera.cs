@@ -85,7 +85,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         ToggleBackground = GameObject.Find("ToggleBack");
         TogglePoint.GetComponent<Toggle>().isOn = false;
         ToggleBackground.GetComponent<Toggle>().isOn = false;
-
+                
         PlayerPrefs.SetInt("PointerActive", 0);
         PlayerPrefs.SetInt("BackgroundActive", 0);
 
@@ -423,18 +423,18 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             SetRendererEnabled(calibPointGO, true);
 
             //short delay allowing eye to settle before sampling
-            Invoke("sampleCalibrationPoint", .25f);
+            Invoke("sampleCalibrationPoint", .5f);
 
             //call pause after sampling
-            Invoke("shortDelay", 1.5f);
+            Invoke("shortDelay", 2.0f);
         }
-    }
+    }   
 
     private void sampleCalibrationPoint()
     {
         GazeManager.Instance.CalibrationPointStart((int)Math.Round(calibPoint.X), (int)Math.Round(calibPoint.Y));
     }
-
+       
     private void GenerateCalibrationPoints()
     {
         // create 9 calib points according to window size

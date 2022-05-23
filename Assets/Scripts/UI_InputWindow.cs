@@ -40,7 +40,6 @@ public class UI_InputWindow : MonoBehaviour {
             }
 
             string outputFolder = input.text;
-            print(outputFolder);
 
             if (outputFolder.Length > 0)
             {

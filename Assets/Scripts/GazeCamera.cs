@@ -37,7 +37,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private bool pressed;
 
-    private GameObject bell, button, game_end, TogglePoint, ToggleBackground, BackGround, game_UI;
+    private GameObject bell, button, game_end, time_label, TogglePoint, ToggleBackground, BackGround, game_UI;
 
     private int bell_counter, saccade_counter;
 
@@ -68,6 +68,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         button = GameObject.Find("Button");
         game_end = GameObject.Find("GameEndText");
         game_end.SetActive(false);
+        time_label = GameObject.Find("time_label");
+        time_label.SetActive(false);
 
         bell.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
         button.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
@@ -165,6 +167,33 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             mouse_control = true;
     }
 
+    public static string GetMedian(List<float> l)
+    {
+        // Create a copy of the input, and sort the copy
+
+        l.Sort();
+
+        int count = l.Count;
+        if (count == 0)
+        {
+            return "-";
+        }
+        else if (count % 2 == 0)
+        {
+            // count is even, average two middle elements
+            float a = l.ElementAt(count / 2 - 1);
+            float b = l.ElementAt(count / 2);
+            double m = Math.Round((a + b) / 2, 2);
+            return m.ToString();
+        }
+        else
+        {
+            // count is odd, return the middle element
+            double m = Math.Round(l.ElementAt(count / 2), 2); 
+            return m.ToString();
+        }
+    }
+
     void MenuClick()
     {
         Application.LoadLevel(0);
@@ -215,63 +244,99 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 Directory.CreateDirectory(exp_dir);
             }
 
-            string csv_path = exp_dir + "\\" + player + "_" + datetime + ".csv";
-
-            TextWriter tw = new StreamWriter(csv_path);
-
-            tw.WriteLine("Объект клика, время (сек)");
-            string click_type = "";
-            tw.WriteLine("кнопка 0, " + search_times[0]);
-            for (int i = 1; i < search_times.Count; i++)
-            {
-
-                int num = (i - 1) / 2 + 1;
-
-                if ((i - 1) % 2 == 0)
-                    click_type = "звонок " + num.ToString() + ", ";
-                else
-                    click_type = "кнопка " + num.ToString() + ", ";
-                tw.WriteLine(click_type + search_times[i]);
-            }
-
-            if (search_times.Count > 1)
-                tw.WriteLine("среднее время, " + search_times.Average());
-
-            tw.WriteLine("число саккад, " + saccade_counter);
-
-
-            // close the stream
-            tw.Close();
-
             // loop to draw several trajectories if needed
+
+            List<float> left_times_bells, right_times_bells, left_times_buttons, right_times_buttons, times_bells, times_buttons;
+            left_times_bells = new List<float>();
+            right_times_bells = new List<float>();
+            left_times_buttons = new List<float>();
+            right_times_buttons = new List<float>();
+            times_bells = new List<float>();
+            times_buttons = new List<float>();
 
             for (int s = 0; s < pos.Count; s++)
             {
+                
                 bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
                 List<GameObject> bells = new List<GameObject>();
+
+                //time_label.SetActive(true);
+                //List<GameObject> time_labels = new List<GameObject>();
+
 
                 int bell_draw = angles.Count;
                 if (s == pos.Count - 1)
                     bell_draw = bell_counter % angles.Count;
 
+                
                 for (int i = 0; i < bell_draw; i++)
                 {
                     int position = i % angles.Count;
 
-                    float angle = 2 * (float)Math.PI * angles.ElementAt(position) / 12.0f;
+                    float a = angles.ElementAt(position);
+
+                    float angle = 2 * (float)Math.PI * a / 12.0f;
                     float x_pos = R * (float)Math.Sin(angle);
                     float y_pos = R * (float)Math.Cos(angle);
+
+                    int bell_num = (angles.Count * s + i) * 2 + 1;
+                    double bell_time = Math.Round(search_times[bell_num], 2);
+                    // we can have no button after the bell
+                    string btn_time = "-";
+                    if (search_times.Count > bell_num + 1)
+                        btn_time = Math.Round(search_times[bell_num + 1], 2).ToString();
+
+                    string time = (i + 1).ToString() + ": " + bell_time.ToString() + " / " + btn_time.ToString();
 
                     if (i == 0)
                     {
                         bell.transform.position = new Vector2(x_pos, y_pos);
                         bell.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
+
+                        //time_label.transform.position = new Vector2(x_pos, y_pos);
+                        //print(time_label.transform.position);
+                        
+                        //Text time_text = time_label.GetComponent<Text>();
+                        //time_text.text = time;
                     }
                     else
                     {
                         GameObject bell_new = (GameObject)Instantiate(bell, new Vector3(x_pos, y_pos, 0), Quaternion.identity);
                         bells.Add(bell_new);
+
+                        //WorldToScreenPoint
+                        //Vector3 text_pos = cam.ScreenToWorldPoint(new Vector3(x_pos, y_pos, 0));
+                        //print(text_pos);
+
+                        // Vector3 screenPoint = new Vector3(x_pos, y_pos, cam.nearClipPlane + .1f);
+                        // Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+
+                        //GameObject time_label_new = (GameObject)Instantiate(time_label);
+                        //time_label_new.transform.position = new Vector2(x_pos, y_pos);
+                        //print(time_label_new.transform.position);
+
+                        //time_label_new.GetComponent<Text>().text = time;
+                        //time_labels.Add(time_label_new);
                     }
+
+                    times_bells.Add(search_times[bell_num]);
+                    if (search_times.Count > bell_num + 1)
+                        times_buttons.Add(search_times[bell_num + 1]);
+
+
+                    if (a > 0 && a < 6.0)
+                    {
+                        right_times_bells.Add(search_times[bell_num]);
+                        if (search_times.Count > bell_num + 1)
+                            right_times_buttons.Add(search_times[bell_num + 1]);
+                    }
+                    else if (a > 6.0 && a < 12.0)
+                    {
+                        left_times_bells.Add(search_times[bell_num]);
+                        if (search_times.Count > bell_num + 1)
+                            left_times_buttons.Add(search_times[bell_num + 1]);
+                    }
+
                 }
 
                 if (bell_counter == 0)
@@ -321,12 +386,51 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 for (int i = 0; i < bells.Count; i++)
                 {
                     Destroy(bells.ElementAt(i));
+                    //Destroy(time_labels.ElementAt(i));
                 }
 
                 button.SetActive(false);
                 bell.SetActive(false);
+                time_label.SetActive(false);
 
             }
+
+            string csv_path = exp_dir + "\\" + player + "_" + datetime + ".csv";
+
+            TextWriter tw = new StreamWriter(csv_path);
+
+            tw.WriteLine("Объект клика, время (сек)");
+            string click_type = "";
+            tw.WriteLine("кнопка 0, " + search_times[0]);
+            for (int i = 1; i < search_times.Count; i++)
+            {
+                int num = (i - 1) / 2 + 1;
+
+                if ((i - 1) % 2 == 0)
+                    click_type = "звонок " + num.ToString() + ", ";
+                else
+                    click_type = "кнопка " + num.ToString() + ", ";
+                tw.WriteLine(click_type + search_times[i]);
+            }
+
+            tw.WriteLine("число саккад, " + saccade_counter);
+
+            if (search_times.Count > 1)
+                tw.WriteLine("среднее время - звонки, " + Math.Round(times_bells.Average(), 2));
+                tw.WriteLine("медианное время - звонки, " + GetMedian(times_bells)); // change to median
+                tw.WriteLine("среднее время - кнопки " + Math.Round(times_buttons.Average(), 2));
+                tw.WriteLine("медианное время - кнопки " + GetMedian(times_buttons)); // change to median
+                tw.WriteLine("среднее левое - звонки, " + Math.Round(left_times_bells.Average(), 2));
+                tw.WriteLine("медианное левое - звонки, " + GetMedian(left_times_bells)); // change to median
+                tw.WriteLine("среднее левое - кнопки, " + Math.Round(left_times_buttons.Average(), 2));
+                tw.WriteLine("медианное левоое - кнопки, " + GetMedian(left_times_buttons)); // change to median
+                tw.WriteLine("среднее правое - звонки, " + Math.Round(right_times_bells.Average(), 2));
+                tw.WriteLine("медианное правое - звонки, " + GetMedian(right_times_bells)); // change to median
+                tw.WriteLine("среднее правое - кнопки, " + Math.Round(right_times_buttons.Average(), 2));
+                tw.WriteLine("медианное правое - кнопки, " + GetMedian(right_times_buttons)); // change to median
+
+            // close the stream
+            tw.Close();
 
             game_UI.SetActive(true);
 
