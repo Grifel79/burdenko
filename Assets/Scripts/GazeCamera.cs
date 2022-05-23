@@ -358,7 +358,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 {
                     Vector2 dist = new Vector2(pos[s][i].x - pos[s][i - 1].x, pos[s][i].y - pos[s][i - 1].y);
                     float d = dist.magnitude;
-                    print(d);
                     if (d > 0.1)
                     {
                         saccade_counter += 1;
