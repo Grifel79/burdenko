@@ -41,8 +41,9 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
     private int resampleCount;
 
     private bool mouse_control;
+    private float calspeed;
 
-    private GameObject start, exit, service, slider_gametime, slider_clicktime, TogglePoint, ToggleBackground, calib_result, main_UI;
+    private GameObject start, exit, service, slider_gametime, slider_clicktime, slider_calspeed, TogglePoint, ToggleBackground, calib_result, main_UI;
 
     void Start()
     {
@@ -119,6 +120,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
         slider_gametime = GameObject.Find("Slider_GameTime");
         slider_clicktime = GameObject.Find("Slider_ClickTime");
+        slider_calspeed = GameObject.Find("Slider_CalSpeed");
 
         float gametime = slider_gametime.GetComponent<Slider>().value;
         PlayerPrefs.SetFloat("GameTime", gametime);
@@ -129,8 +131,14 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         PlayerPrefs.SetFloat("ClickTime", clicktime);
         GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(а/ы)";
 
+        calspeed = slider_calspeed.GetComponent<Slider>().value;
+        string calspeed_label = "";
+        if (calspeed == 0) calspeed_label = "Медленно"; else if (calspeed == 1) calspeed_label = "Чуть быстрее"; else if (calspeed == 2) calspeed_label = "Быстро";
+        GameObject.Find("CalSpeed").GetComponent<Text>().text = "Калибровка " + calspeed_label;
+
         slider_gametime.GetComponent<Slider>().onValueChanged.AddListener(delegate { GameTimeChanged(); });
         slider_clicktime.GetComponent<Slider>().onValueChanged.AddListener(delegate { ClickTimeChanged(); });
+        slider_calspeed.GetComponent<Slider>().onValueChanged.AddListener(delegate { CalSpeedChanged(); });
 
         service.GetComponentInChildren<Text>().text = GazeManager.Instance.IsCalibrated ? "Перекалибровать" : "Откалибровать";
 
@@ -195,6 +203,14 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
         clicktime /= 2;
         PlayerPrefs.SetFloat("ClickTime", clicktime);
         GameObject.Find("ClickTime").GetComponent<Text>().text = "Время клика = " + clicktime + " секунд(а/ы)";
+    }
+
+    void CalSpeedChanged()
+    {
+        calspeed = slider_calspeed.GetComponent<Slider>().value;
+        string calspeed_label = "";
+        if (calspeed == 0) calspeed_label = "Медленно"; else if (calspeed == 1) calspeed_label = "Чуть быстрее"; else if (calspeed == 2) calspeed_label = "Быстро";
+        GameObject.Find("CalSpeed").GetComponent<Text>().text = "Калибровка " + calspeed_label;
     }
 
     void TogglePointValueChanged()
@@ -423,10 +439,31 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
             SetRendererEnabled(calibPointGO, true);
 
             //short delay allowing eye to settle before sampling
-            Invoke("sampleCalibrationPoint", 1.0f);
+            // 0.25  0.5  1.0
+            float before_sample = 0.25f;
+            float after_sample = 3.0f;
+
+            if (calspeed == 0)
+            {
+                before_sample = 0.25f;
+                after_sample = 1.5f;
+            }
+            else if (calspeed == 0)
+            {
+                before_sample = 0.5f;
+                after_sample = 2.0f;
+            }
+            else if (calspeed == 0)
+            {
+                before_sample = 1.0f;
+                after_sample = 3.0f;
+            }
+
+            Invoke("sampleCalibrationPoint", before_sample);
 
             //call pause after sampling
-            Invoke("shortDelay", 3.0f);
+            // 1.5  2.0  3.0
+            Invoke("shortDelay", after_sample);
         }
     }   
 
