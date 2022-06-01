@@ -85,12 +85,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             ToggleBackgroundValueChanged();
         });
 
-        BackGround = GameObject.Find("background");
+        // BackGround = GameObject.Find("background");
+        BackGround = GameObject.Find("background_bells");
 
         if (PlayerPrefs.GetInt("BackgroundActive") == 0)
         {
             ToggleBackground.GetComponent<Toggle>().isOn = false;
-            BackGround.SetActive(false);
+            BackGround.SetActive(false);    
         }
         else if (PlayerPrefs.GetInt("BackgroundActive") == 1)
         {
