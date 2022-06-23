@@ -448,12 +448,12 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
                 before_sample = 0.25f;
                 after_sample = 1.5f;
             }
-            else if (calspeed == 0)
+            else if (calspeed == 1)
             {
                 before_sample = 0.5f;
                 after_sample = 2.0f;
             }
-            else if (calspeed == 0)
+            else if (calspeed == 2)
             {
                 before_sample = 1.0f;
                 after_sample = 3.0f;
