@@ -23,7 +23,7 @@ Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\TETCSharpClient.dll
 Loading C:\dev\burdenko\burdenko_app_Data\Managed\TETCSharpClient.dll into Unity Child Domain
 Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\UnityEngine.UI.dll (this message is harmless)
 Loading C:\dev\burdenko\burdenko_app_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-- Completed reload, in  0.349 seconds
+- Completed reload, in  0.358 seconds
 <RI> Initializing input.
 XInput1_3.dll not found.
 <RI> Input initialized.
@@ -34,8 +34,8 @@ Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.dll (this me
 Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.Configuration.dll (this message is harmless)
 Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.Xml.dll (this message is harmless)
 Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 2.987800 ms
+UnloadTime: 3.116400 ms
 
-Unloading 12 unused Assets to reduce memory usage. Loaded Objects now: 1189.
-Total: 0.532700 ms (FindLiveObjects: 0.045500 ms CreateObjectMapping: 0.019600 ms MarkObjects: 0.454100 ms  DeleteObjects: 0.012800 ms)
+Unloading 12 unused Assets to reduce memory usage. Loaded Objects now: 1444.
+Total: 0.550600 ms (FindLiveObjects: 0.058700 ms CreateObjectMapping: 0.019000 ms MarkObjects: 0.459300 ms  DeleteObjects: 0.012900 ms)
 
