@@ -398,7 +398,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             string csv_path = exp_dir + "\\" + player + "_" + datetime + ".csv";
 
-            TextWriter tw = new StreamWriter(csv_path);
+            TextWriter tw = new StreamWriter(csv_path, false, System.Text.Encoding.UTF8);
 
             tw.WriteLine("Объект клика, время (сек)");
             string click_type = "";
