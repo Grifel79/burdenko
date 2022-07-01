@@ -38,7 +38,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     private bool pressed;
 
     private GameObject bell, button, game_end, time_label, TogglePoint, ToggleBackground, BackGround, game_UI;
-
+    private GameObject Canvas;
     private int bell_counter, saccade_counter;
 
     private LineRenderer line_renderer;
@@ -70,6 +70,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         game_end.SetActive(false);
         time_label = GameObject.Find("time_label");
         time_label.SetActive(false);
+        Canvas = GameObject.Find("Canvas");
 
         bell.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
         button.GetComponent<Renderer>().material.color = UnityEngine.Color.clear;
@@ -131,6 +132,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
         timeLeft = PlayerPrefs.GetFloat("GameTime");
         timeLeft *= 60;
+
+        // timeLeft = 20; // debug mode 20s - REMOVE THIS!!!
+
         selection_threshold = PlayerPrefs.GetFloat("ClickTime");
         last_click = timeLeft;
         search_times = new List<float>();
@@ -261,8 +265,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 bell.SetActive(true);   // if bell wasn't active - we activate it to draw gazetrack
                 List<GameObject> bells = new List<GameObject>();
 
-                //time_label.SetActive(true);
-                //List<GameObject> time_labels = new List<GameObject>();
+                time_label.SetActive(true);
+                List<GameObject> time_labels = new List<GameObject>();
 
 
                 int bell_draw = angles.Count;
@@ -294,30 +298,26 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                         bell.transform.position = new Vector2(x_pos, y_pos);
                         bell.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
 
-                        //time_label.transform.position = new Vector2(x_pos, y_pos);
-                        //print(time_label.transform.position);
-                        
-                        //Text time_text = time_label.GetComponent<Text>();
-                        //time_text.text = time;
+                        time_label.transform.position = new Vector2(x_pos + 1, y_pos);
+                        print(time_label.transform.position);
+
+                        Text time_text = time_label.GetComponent<Text>();
+                        time_text.text = time;
+
                     }
                     else
                     {
                         GameObject bell_new = (GameObject)Instantiate(bell, new Vector3(x_pos, y_pos, 0), Quaternion.identity);
                         bells.Add(bell_new);
 
-                        //WorldToScreenPoint
-                        //Vector3 text_pos = cam.ScreenToWorldPoint(new Vector3(x_pos, y_pos, 0));
-                        //print(text_pos);
+                        GameObject time_label_new = (GameObject)Instantiate(time_label);
+                        time_label_new.transform.SetParent(Canvas.transform, false);     // without this line text doesn't appear!!!
 
-                        // Vector3 screenPoint = new Vector3(x_pos, y_pos, cam.nearClipPlane + .1f);
-                        // Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+                        time_label_new.transform.position = new Vector2(x_pos + 1, y_pos);
+                        print(time_label_new.transform.position);
 
-                        //GameObject time_label_new = (GameObject)Instantiate(time_label);
-                        //time_label_new.transform.position = new Vector2(x_pos, y_pos);
-                        //print(time_label_new.transform.position);
-
-                        //time_label_new.GetComponent<Text>().text = time;
-                        //time_labels.Add(time_label_new);
+                        time_label_new.GetComponent<Text>().text = time;
+                        time_labels.Add(time_label_new);
                     }
 
                     times_bells.Add(search_times[bell_num]);
@@ -387,7 +387,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 for (int i = 0; i < bells.Count; i++)
                 {
                     Destroy(bells.ElementAt(i));
-                    //Destroy(time_labels.ElementAt(i));
+                    Destroy(time_labels.ElementAt(i));
                 }
 
                 button.SetActive(false);

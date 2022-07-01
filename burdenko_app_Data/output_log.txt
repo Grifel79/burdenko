@@ -1,2 +1,0 @@
-Initialize engine version: 5.0.0f4 (5b98b70ebeb9)
-GfxDevice: creating device client; threaded=1
