@@ -86,7 +86,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             ToggleBackgroundValueChanged();
         });
 
-        // BackGround = GameObject.Find("background");
         BackGround = GameObject.Find("background_bells");
 
         if (PlayerPrefs.GetInt("BackgroundActive") == 0)
@@ -232,6 +231,13 @@ public class GazeCamera : MonoBehaviour, IGazeListener
             game_active = false;
             game_UI.SetActive(false);
 
+            GameObject bg_label = Canvas.transform.Find("background_label").gameObject;
+            if (BackGround.activeSelf)
+            {
+                BackGround.SetActive(false);
+                bg_label.SetActive(true);
+            }
+
             // let's save search_times to csv
 
             string dir = "C:\\Screenshots\\" + player;
@@ -291,7 +297,8 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                     if (search_times.Count > bell_num + 1)
                         btn_time = Math.Round(search_times[bell_num + 1], 2).ToString();
 
-                    string time = (i + 1).ToString() + ": " + bell_time.ToString() + " / " + btn_time.ToString();
+
+                    string time = (i + s * angles.Count + 1).ToString() + ": " + bell_time.ToString() + " / " + btn_time.ToString();
 
                     if (i == 0)
                     {
@@ -414,6 +421,9 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 tw.WriteLine(click_type + search_times[i]);
             }
 
+            tw.WriteLine("Время фиксации (с), " + PlayerPrefs.GetFloat("ClickTime"));
+            tw.WriteLine("Длина сеанса (мин), " + PlayerPrefs.GetFloat("GameTime"));
+
             tw.WriteLine("число саккад, " + saccade_counter);
 
             if (search_times.Count > 1)
@@ -437,6 +447,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
             ToggleBackground.GetComponent<Toggle>().isOn = false;
             BackGround.SetActive(false);
+            bg_label.SetActive(false);
 
             Text end_text = game_end.GetComponent<Text>();
             end_text.text = "Поздравляем! Число найденных колокольчиков: " + bell_counter.ToString() + " !";
