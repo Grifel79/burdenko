@@ -434,7 +434,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                 tw.WriteLine("среднее левое - звонки, " + Math.Round(left_times_bells.Average(), 2));
                 tw.WriteLine("медианное левое - звонки, " + GetMedian(left_times_bells)); // change to median
                 tw.WriteLine("среднее левое - кнопки, " + Math.Round(left_times_buttons.Average(), 2));
-                tw.WriteLine("медианное левоое - кнопки, " + GetMedian(left_times_buttons)); // change to median
+                tw.WriteLine("медианное левое - кнопки, " + GetMedian(left_times_buttons)); // change to median
                 tw.WriteLine("среднее правое - звонки, " + Math.Round(right_times_bells.Average(), 2));
                 tw.WriteLine("медианное правое - звонки, " + GetMedian(right_times_bells)); // change to median
                 tw.WriteLine("среднее правое - кнопки, " + Math.Round(right_times_buttons.Average(), 2));
