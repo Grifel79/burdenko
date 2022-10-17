@@ -1,0 +1,116 @@
+Initialize engine version: 5.0.0f4 (5b98b70ebeb9)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [aticfx64.dll 22.19.128.1]
+    Renderer: Radeon Pro 560
+    Vendor:   ATI
+    VRAM:     4044 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=1 INTZ=1 NULL=1 RESZ=1 SlowINTZ=1
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\Assembly-CSharp-firstpass.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\Assembly-CSharp-firstpass.dll into Unity Child Domain
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\Assembly-UnityScript-firstpass.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\Assembly-UnityScript-firstpass.dll into Unity Child Domain
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\Newtonsoft.Json.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\Newtonsoft.Json.dll into Unity Child Domain
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\TETCSharpClient.dll (this message is harmless)
+Loading C:\dev\burdenko\burdenko_app_Data\Managed\TETCSharpClient.dll into Unity Child Domain
+- Completed reload, in  0.463 seconds
+<RI> Initializing input.
+XInput1_3.dll not found.
+<RI> Input initialized.
+desktop: 2880x1800 60Hz; virtual: 2880x1800 at 0,0
+<RI> Initialized touch support.
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.dll (this message is harmless)
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.Configuration.dll (this message is harmless)
+Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\System.Xml.dll (this message is harmless)
+ArgumentOutOfRangeException: Argument is out of range.
+Parameter name: index
+  at System.Collections.Generic.List`1[UnityEngine.UICharInfo].get_Item (Int32 index) [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.InputField.SetDrawRangeToContainCaretPosition (UnityEngine.TextGenerator gen, Int32 caretPos, System.Int32& drawStart, System.Int32& drawEnd) [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.InputField.UpdateLabel () [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.InputField.OnUpdateSelected (UnityEngine.EventSystems.BaseEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute (IUpdateSelectedHandler handler, UnityEngine.EventSystems.BaseEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute[IUpdateSelectedHandler] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.EventFunction`1 functor) [0x00000] in <filename unknown>:0 
+UnityEngine.Debug:Internal_LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+UnityEngine.EventSystems.ExecuteEvents:Execute(GameObject, BaseEventData, EventFunction`1)
+UnityEngine.EventSystems.StandaloneInputModule:SendUpdateEventToSelectedObject()
+UnityEngine.EventSystems.StandaloneInputModule:Process()
+UnityEngine.EventSystems.EventSystem:Update()
+ 
+(Filename:  Line: -1)
+
+Save Path will be : C:\Screenshots\GazePoint
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 3.317200 ms
+
+Unloading 12 unused Assets to reduce memory usage. Loaded Objects now: 1490.
+Total: 0.568400 ms (FindLiveObjects: 0.061300 ms CreateObjectMapping: 0.020500 ms MarkObjects: 0.462000 ms  DeleteObjects: 0.013200 ms)
+
+(1.0, 2.0, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(-0.7, 1.0, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(2.7, -1.0, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(2.7, 1.0, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(-0.7, -1.0, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(0.0, 1.7, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(-0.9, -0.5, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(2.4, -1.4, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(2.0, 1.7, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(-0.4, -1.4, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(2.9, -0.5, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(0.5, 1.9, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(1.5, 1.9, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+
+(-0.9, 0.5, 0.0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+

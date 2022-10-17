@@ -6,6 +6,8 @@ using Assets.Scripts;
 using System;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.IO;
+using System.Net.Sockets;
 
 
 /// <summary>
@@ -45,8 +47,30 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
     private GameObject start, exit, service, slider_gametime, slider_clicktime, slider_calspeed, TogglePoint, ToggleBackground, calib_result, main_UI;
 
+    // GazePoint data
+    const int ServerPort = 4242;
+    const string ServerAddr = "127.0.0.1";
+    TcpClient gp3_client;
+
     void Start()
     {
+        // Connect to GazePoint eytracker. If no success - work with EyeTribe or mouse. Save what tracker is used in PlayerPrefs.
+
+        int gp = 1;
+        PlayerPrefs.SetInt("GazePoint", 0);
+        // Try to create client object, return if no server found
+        try
+        {
+            gp3_client = new TcpClient(ServerAddr, ServerPort);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Failed to connect with error: {0}", e);
+            gp = 0;
+        }
+
+        PlayerPrefs.SetInt("GazePoint", gp);    // using gazepoint or not 
+
         //Stay in landscape
         Screen.autorotateToPortrait = false;
 
@@ -153,8 +177,15 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
     void StartClick()
     {
-        if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
+        if (PlayerPrefs.GetInt("GazePoint") == 1)   // by default we work with GazePoint eyetracker
         {
+            inputWindow.Show();
+            start.SetActive(false);
+            service.SetActive(false);
+        }
+        else if (GazeManager.Instance.IsCalibrated && !GazeManager.Instance.IsCalibrating)
+        {
+            PlayerPrefs.SetInt("EyeTribe", 1);
             inputWindow.Show();
             start.SetActive(false);
             service.SetActive(false);

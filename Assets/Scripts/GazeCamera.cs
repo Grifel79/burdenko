@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading;
 using UnityEngine.UI;
 using System.IO;
+using System.IO;
+using System.Net.Sockets;
 
 /// <summary>
 /// Component attached to 'Main Camera' of '/Scenes/std_scene.unity'.
@@ -53,8 +55,44 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     private bool mouse_control;
 
+    // GazePoint data
+    const int ServerPort = 4242;
+    const string ServerAddr = "127.0.0.1";
+    TcpClient gp3_client;
+    NetworkStream data_feed;
+    StreamWriter data_write;
+
     void Start()
     {
+
+        // GazePoint tracker
+
+        try
+        {
+            gp3_client = new TcpClient(ServerAddr, ServerPort); 
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Failed to connect with error: {0}", e);
+            PlayerPrefs.SetInt("GazePoint", 0);
+        }
+
+        if (PlayerPrefs.GetInt("GazePoint") == 1)    // if using setting up for getting coordinate
+        {
+            // Load the read and write streams
+            data_feed = gp3_client.GetStream();
+            data_write = new StreamWriter(data_feed);
+
+            // Setup the data records
+            data_write.Write("<SET ID=\"ENABLE_SEND_TIME\" STATE=\"1\" />\r\n");
+            data_write.Write("<SET ID=\"ENABLE_SEND_POG_FIX\" STATE=\"1\" />\r\n");
+            data_write.Write("<SET ID=\"ENABLE_SEND_CURSOR\" STATE=\"1\" />\r\n");
+            data_write.Write("<SET ID=\"ENABLE_SEND_DATA\" STATE=\"1\" />\r\n");
+
+            // Flush the buffer out the socket
+            data_write.Flush();
+        }
+
         player = PlayerPrefs.GetString("Player name");
 
         game_active = true;
@@ -467,50 +505,85 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         {
             timeLeft -= Time.deltaTime;
 
-            // not sure is it good to use GazeDataValidator. Maybe get coords directly is fine. Also if use it - smoothed or raw?
+            Vector3 screenPoint = new Vector3();
 
-            // add mouse control!
-
-            if (!mouse_control)
+            if (PlayerPrefs.GetInt("GazePoint") == 1)
             {
+                String incoming_data = "";
+                int startindex, endindex;
+
+                int ch = 0;
+                while (incoming_data.IndexOf("\r\n") == -1)     // read full data string from eyetracker
+                {
+                    ch = data_feed.ReadByte();
+                    incoming_data += (char)ch;
+                }
+                    // find string terminator ("\r\n") 
+                if (incoming_data.IndexOf("\r\n") != -1)
+                {
+                    // only process DATA RECORDS, ie <REC .... />
+                    if (incoming_data.IndexOf("<REC") != -1)
+                    {
+                        double time_val;
+                        double fpogx;
+                        double fpogy;
+                        int fpog_valid;
+
+                        // Process incoming_data string to extract FPOGX, FPOGY, etc...
+                        //startindex = incoming_data.IndexOf("TIME=\"") + "TIME=\"".Length;
+                        //endindex = incoming_data.IndexOf("\"", startindex);
+                        //time_val = Double.Parse(incoming_data.Substring(startindex, endindex - startindex));
+
+                        startindex = incoming_data.IndexOf("FPOGX=\"") + "FPOGX=\"".Length;
+                        endindex = incoming_data.IndexOf("\"", startindex);
+                        fpogx = Double.Parse(incoming_data.Substring(startindex, endindex - startindex));
+
+                        startindex = incoming_data.IndexOf("FPOGY=\"") + "FPOGY=\"".Length;
+                        endindex = incoming_data.IndexOf("\"", startindex);
+                        fpogy = Double.Parse(incoming_data.Substring(startindex, endindex - startindex));
+
+                        startindex = incoming_data.IndexOf("FPOGV=\"") + "FPOGV=\"".Length;
+                        endindex = incoming_data.IndexOf("\"", startindex);
+                        fpog_valid = Int32.Parse(incoming_data.Substring(startindex, endindex - startindex));
+
+                        //Console.WriteLine("Raw data: {0}", incoming_data);
+                        //Console.WriteLine("Processed data: Time {0}, Gaze ({1},{2}) Valid={3}", fpogx, fpogy, fpog_valid);
+
+                        Point2D gazeCoords = new Point2D((float)fpogx * Screen.width, (float)fpogy * Screen.height);
+
+                        if (gazeCoords != null)
+                        {
+                            //map gaze indicator
+                            Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
+                            screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
+                        }
+                    }
+                }
+            
+            }
+            else if (PlayerPrefs.GetInt("EyeTribe") == 1)
+            {
+                // not sure is it good to use GazeDataValidator. Maybe get coords directly is fine. Also if use it - smoothed or raw?
                 Point2D gazeCoords = gazeUtils.GetLastValidSmoothedGazeCoordinates();
 
                 if (gazeCoords != null)
                 {
                     //map gaze indicator
-
                     Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
-
-                    Vector3 screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
-
-                    Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
-
-                    gazeIndicator.transform.position = planeCoord;
-
-                    pos[bell_set].Add(planeCoord);
-
-                    //handle collision detection
-                    checkGazeCollision(screenPoint);
+                    screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
                 }
             }
-            else
+            else if (mouse_control)
             {
-
                 Vector3 mousePos = Input.mousePosition;
-
-                Vector3 screenPoint = new Vector3((float)mousePos.x, (float)mousePos.y, cam.nearClipPlane + .1f);
-
-                Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
-
-                gazeIndicator.transform.position = planeCoord;
-
-                pos[bell_set].Add(planeCoord);
-
-                //handle collision detection
-                checkGazeCollision(screenPoint);
+                screenPoint = new Vector3((float)mousePos.x, (float)mousePos.y, cam.nearClipPlane + .1f);
             }
 
-
+            Vector3 planeCoord = cam.ScreenToWorldPoint(screenPoint);
+            gazeIndicator.transform.position = planeCoord;
+            pos[bell_set].Add(planeCoord);
+            //handle collision detection
+            checkGazeCollision(screenPoint);
         }
 
         //handle keypress
@@ -634,6 +707,12 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     void OnApplicationQuit()
     {
         GazeManager.Instance.RemoveGazeListener(this);
+        if (PlayerPrefs.GetInt("GazePoint") == 1)    // if using setting up for getting coordinate
+        {
+            data_write.Close();
+            data_feed.Close();
+            gp3_client.Close();
+        }
     }
 }
     
