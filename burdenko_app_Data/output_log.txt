@@ -21,7 +21,7 @@ Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\Newtonsoft.Json.dll
 Loading C:\dev\burdenko\burdenko_app_Data\Managed\Newtonsoft.Json.dll into Unity Child Domain
 Platform assembly: C:\dev\burdenko\burdenko_app_Data\Managed\TETCSharpClient.dll (this message is harmless)
 Loading C:\dev\burdenko\burdenko_app_Data\Managed\TETCSharpClient.dll into Unity Child Domain
-- Completed reload, in  0.463 seconds
+- Completed reload, in  0.395 seconds
 <RI> Initializing input.
 XInput1_3.dll not found.
 <RI> Input initialized.
@@ -48,69 +48,64 @@ UnityEngine.EventSystems.EventSystem:Update()
  
 (Filename:  Line: -1)
 
-Save Path will be : C:\Screenshots\GazePoint
+Save Path will be : C:\Screenshots\mouse 24h
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
 
 Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 3.317200 ms
+UnloadTime: 2.565400 ms
 
 Unloading 12 unused Assets to reduce memory usage. Loaded Objects now: 1490.
-Total: 0.568400 ms (FindLiveObjects: 0.061300 ms CreateObjectMapping: 0.020500 ms MarkObjects: 0.462000 ms  DeleteObjects: 0.013200 ms)
+Total: 0.622800 ms (FindLiveObjects: 0.098600 ms CreateObjectMapping: 0.018600 ms MarkObjects: 0.477300 ms  DeleteObjects: 0.012900 ms)
 
-(1.0, 2.0, 0.0)
+Failed to connect with error: System.Net.Sockets.SocketException: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+
+  at System.Net.Sockets.Socket.Connect (System.Net.EndPoint remoteEP, Boolean requireSocketPolicy) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.Connect (System.Net.EndPoint remoteEP) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.TcpClient.Connect (System.Net.IPEndPoint remote_end_point) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.TcpClient.Connect (System.Net.IPAddress[] ipAddresses, Int32 port) [0x00000] in <filename unknown>:0 
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.433000 ms
+
+Unloading 15 unused Assets to reduce memory usage. Loaded Objects now: 383.
+Total: 0.398100 ms (FindLiveObjects: 0.014800 ms CreateObjectMapping: 0.007100 ms MarkObjects: 0.358800 ms  DeleteObjects: 0.016800 ms)
+
+Failed to connect with error: System.Net.Sockets.SocketException: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+
+  at System.Net.Sockets.Socket.Connect (System.Net.EndPoint remoteEP, Boolean requireSocketPolicy) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.Connect (System.Net.EndPoint remoteEP) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.TcpClient.Connect (System.Net.IPEndPoint remote_end_point) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.TcpClient.Connect (System.Net.IPAddress[] ipAddresses, Int32 port) [0x00000] in <filename unknown>:0 
+ArgumentOutOfRangeException: Argument is out of range.
+Parameter name: index
+  at System.Collections.Generic.List`1[UnityEngine.UICharInfo].get_Item (Int32 index) [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.InputField.SetDrawRangeToContainCaretPosition (UnityEngine.TextGenerator gen, Int32 caretPos, System.Int32& drawStart, System.Int32& drawEnd) [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.InputField.UpdateLabel () [0x00000] in <filename unknown>:0 
+  at UnityEngine.UI.InputField.OnUpdateSelected (UnityEngine.EventSystems.BaseEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute (IUpdateSelectedHandler handler, UnityEngine.EventSystems.BaseEventData eventData) [0x00000] in <filename unknown>:0 
+  at UnityEngine.EventSystems.ExecuteEvents.Execute[IUpdateSelectedHandler] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.EventFunction`1 functor) [0x00000] in <filename unknown>:0 
+UnityEngine.Debug:Internal_LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+UnityEngine.EventSystems.ExecuteEvents:Execute(GameObject, BaseEventData, EventFunction`1)
+UnityEngine.EventSystems.StandaloneInputModule:SendUpdateEventToSelectedObject()
+UnityEngine.EventSystems.StandaloneInputModule:Process()
+UnityEngine.EventSystems.EventSystem:Update()
+ 
+(Filename:  Line: -1)
+
+Save Path will be : C:\Screenshots\mouse24h
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
 
-(-0.7, 1.0, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.661200 ms
 
-(2.7, -1.0, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 1490.
+Total: 0.524500 ms (FindLiveObjects: 0.052600 ms CreateObjectMapping: 0.013300 ms MarkObjects: 0.446800 ms  DeleteObjects: 0.011500 ms)
 
-(2.7, 1.0, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(-0.7, -1.0, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(0.0, 1.7, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(-0.9, -0.5, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(2.4, -1.4, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(2.0, 1.7, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(-0.4, -1.4, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(2.9, -0.5, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(0.5, 1.9, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(1.5, 1.9, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
-(-0.9, 0.5, 0.0)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebug.gen.cpp Line: 56)
-
+Failed to connect with error: System.Net.Sockets.SocketException: Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+
+  at System.Net.Sockets.Socket.Connect (System.Net.EndPoint remoteEP, Boolean requireSocketPolicy) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.Socket.Connect (System.Net.EndPoint remoteEP) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.TcpClient.Connect (System.Net.IPEndPoint remote_end_point) [0x00000] in <filename unknown>:0 
+  at System.Net.Sockets.TcpClient.Connect (System.Net.IPAddress[] ipAddresses, Int32 port) [0x00000] in <filename unknown>:0 

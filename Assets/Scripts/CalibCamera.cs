@@ -168,7 +168,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
         if (!GazeManager.Instance.IsActivated)
         {
-            service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
+            service.GetComponentInChildren<Text>().text = "Запуск EyeTribe";
         }
 
         mouse_control = false;
@@ -276,7 +276,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
 
                 if (!GazeManager.Instance.IsActivated && !GazeManager.Instance.IsCalibrating)
                 {
-                    service.GetComponentInChildren<Text>().text = "Подключиться к серверу";
+                    service.GetComponentInChildren<Text>().text = "Запуск EyeTribe";
                 }
                 else if (!GazeManager.Instance.IsCalibrating)
                 {

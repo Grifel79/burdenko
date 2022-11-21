@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using UnityEngine.UI;
 using System.IO;
-using System.IO;
 using System.Net.Sockets;
 
 /// <summary>
@@ -182,10 +181,22 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         R = 2; // find how connect it to the screen resolution etc!
         // bell's angular positions in hours from 0 to 12 hours. Total 19 positions!
 
-        if (!BackGround.activeSelf)
-            angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
+        if (PlayerPrefs.GetInt("EyeTribe") == 1)
+        {
+            if (!BackGround.activeSelf)
+                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
+            else
+                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 12.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
+        }    
         else
-            angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 12.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
+        {
+            if (!BackGround.activeSelf)
+                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 5.5f, 7.0f, 3.0f, 9.0f, 5.0f, 6.5f, 6.0f };
+            else
+                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 3.5f, 7.5f, 11.0f, 4.5f, 8.5f, 12.5f, 11.5f, 6.5f, 10.5f, 5.0f, 2.5f, 9.5f, 7.0f, 5.5f, 1.5f, 9.0f, 3.0f, 6.0f };
+
+        }
+
 
         //1st version bells
         // 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f
@@ -495,7 +506,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
     void Update()
     {
-        int bell_set = (bell_counter - 1) / 19;
+        int bell_set = (bell_counter - 1) / angles.Count;
 
         if (timeLeft < 0)
         {
@@ -524,7 +535,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                     // only process DATA RECORDS, ie <REC .... />
                     if (incoming_data.IndexOf("<REC") != -1)
                     {
-                        double time_val;
+                        
                         double fpogx;
                         double fpogy;
                         int fpog_valid;
@@ -548,14 +559,16 @@ public class GazeCamera : MonoBehaviour, IGazeListener
 
                         //Console.WriteLine("Raw data: {0}", incoming_data);
                         //Console.WriteLine("Processed data: Time {0}, Gaze ({1},{2}) Valid={3}", fpogx, fpogy, fpog_valid);
-
-                        Point2D gazeCoords = new Point2D((float)fpogx * Screen.width, (float)fpogy * Screen.height);
-
-                        if (gazeCoords != null)
+                        if (fpogx > 0.0f || fpogy > 0.0f)
                         {
-                            //map gaze indicator
-                            Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
-                            screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
+                            Point2D gazeCoords = new Point2D((float)fpogx * Screen.width, (float)fpogy * Screen.height);
+
+                            if (gazeCoords != null)
+                            {
+                                //map gaze indicator
+                                Point2D gp = UnityGazeUtils.getGazeCoordsToUnityWindowCoords(gazeCoords);   // now it just inverts y coordinate
+                                screenPoint = new Vector3((float)gp.X, (float)gp.Y, cam.nearClipPlane + .1f);
+                            }
                         }
                     }
                 }
@@ -676,7 +689,7 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                     button.SetActive(false);
                     bell.SetActive(true);
 
-                    if (bell_counter % 19 == 0 && bell_counter!=0)
+                    if (bell_counter % angles.Count == 0 && bell_counter!=0)
                         pos.Add(new List<Vector3>());
 
                 }
