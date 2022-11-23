@@ -285,7 +285,7 @@ public class CalibCamera : MonoBehaviour, IGazeListener, ICalibrationProcessHand
                 }
             }
 
-            if (!GazeManager.Instance.IsCalibrating)
+            if (!GazeManager.Instance.IsCalibrating && GazeManager.Instance.IsActivated)
             {
                 Point2D userPos = gazeUtils.GetLastValidUserPosition();
 

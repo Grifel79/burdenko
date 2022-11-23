@@ -48,8 +48,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
     List<float> angles;
     private int R;
 
-    private ScreenCapture screen_capture;
-
     private string player;
 
     private bool mouse_control;
@@ -97,7 +95,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         game_active = true;
         //Stay in landscape
         Screen.autorotateToPortrait = false;
-        screen_capture = new ScreenCapture();
 
         game_UI = GameObject.Find("game_UI");
 
@@ -355,7 +352,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                         bell.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
 
                         time_label.transform.position = new Vector2(x_pos + 1, y_pos);
-                        print(time_label.transform.position);
 
                         Text time_text = time_label.GetComponent<Text>();
                         time_text.text = time;
@@ -370,7 +366,6 @@ public class GazeCamera : MonoBehaviour, IGazeListener
                         time_label_new.transform.SetParent(Canvas.transform, false);     // without this line text doesn't appear!!!
 
                         time_label_new.transform.position = new Vector2(x_pos + 1, y_pos);
-                        print(time_label_new.transform.position);
 
                         time_label_new.GetComponent<Text>().text = time;
                         time_labels.Add(time_label_new);

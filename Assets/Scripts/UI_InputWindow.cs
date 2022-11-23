@@ -47,7 +47,6 @@ public class UI_InputWindow : MonoBehaviour {
                 if (!Directory.Exists(path + outputFolder))
                 {
                     Directory.CreateDirectory(path + outputFolder);
-                    print("Save Path will be : " + path + outputFolder);
                 }
 
                 PlayerPrefs.SetString("Player name", outputFolder);
@@ -85,7 +84,6 @@ public class UI_InputWindow : MonoBehaviour {
         }
 
         string outputFolder = input.text;
-        print(outputFolder);
 
         if (outputFolder.Length > 0)
         {
@@ -94,7 +92,6 @@ public class UI_InputWindow : MonoBehaviour {
             if (!Directory.Exists(path + outputFolder))
             {
                 Directory.CreateDirectory(path + outputFolder);
-                print("Save Path will be : " + path + outputFolder);
             }
 
             PlayerPrefs.SetString("Player name", outputFolder);
