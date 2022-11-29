@@ -181,22 +181,22 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         if (PlayerPrefs.GetInt("EyeTribe") == 1)
         {
             if (!BackGround.activeSelf)
-                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
+                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
             else
-                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 12.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
+                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 0.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
         }    
         else
         {
             if (!BackGround.activeSelf)
-                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 12.5f, 9.5f, 1.5f, 2.5f, 10.5f, 5.5f, 7.0f, 3.0f, 9.0f, 5.0f, 6.5f, 6.0f };
+                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 5.5f, 7.0f, 3.0f, 9.0f, 5.0f, 6.5f, 6.0f };
             else
-                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 3.5f, 7.5f, 11.0f, 4.5f, 8.5f, 12.5f, 11.5f, 6.5f, 10.5f, 5.0f, 2.5f, 9.5f, 7.0f, 5.5f, 1.5f, 9.0f, 3.0f, 6.0f };
+                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 3.5f, 7.5f, 11.0f, 4.5f, 8.5f, 0.5f, 11.5f, 6.5f, 10.5f, 5.0f, 2.5f, 9.5f, 7.0f, 5.5f, 1.5f, 9.0f, 3.0f, 6.0f };
 
         }
 
 
         //1st version bells
-        // 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 12.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f
+        // 1.0f, 9.0f, 12.0f, 6.0f, 3.0f, 5.0f, 10.0f, 7.0f, 8.0f, 4.0f, 11.0f, 2.0f, 2.5f, 3.5f, 10.5f, 6.5f, 0.5f, 8.5f, 9.5f, 11.5f, 4.5f, 5.5f, 1.5f, 7.5f
 
         line_renderer = cam.transform.GetChild(0).GetComponent<LineRenderer>();
         pos = new List<List<Vector3>>();
