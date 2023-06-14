@@ -178,21 +178,29 @@ public class GazeCamera : MonoBehaviour, IGazeListener
         R = 2; // find how connect it to the screen resolution etc!
         // bell's angular positions in hours from 0 to 12 hours. Total 19 positions!
 
-        if (PlayerPrefs.GetInt("EyeTribe") == 1)
-        {
-            if (!BackGround.activeSelf)
-                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
-            else
-                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 0.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
-        }    
-        else
-        {
-            if (!BackGround.activeSelf)
-                angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 5.5f, 7.0f, 3.0f, 9.0f, 5.0f, 6.5f, 6.0f };
-            else
-                angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 3.5f, 7.5f, 11.0f, 4.5f, 8.5f, 0.5f, 11.5f, 6.5f, 10.5f, 5.0f, 2.5f, 9.5f, 7.0f, 5.5f, 1.5f, 9.0f, 3.0f, 6.0f };
+        //if (PlayerPrefs.GetInt("EyeTribe") == 1)
+        //{
+        //    if (!BackGround.activeSelf)
+        //        angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 3.0f, 9.0f };
+        //    else
+        //        angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 4.5f, 8.5f, 11.0f, 3.5f, 7.5f, 0.5f, 11.5f, 2.5f, 10.5f, 9.5f, 1.5f, 9.0f, 3.0f };
+        //}    
+        //else
+        //{
+        //    if (!BackGround.activeSelf)
+        //        angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 5.5f, 7.0f, 3.0f, 9.0f, 5.0f, 6.5f, 6.0f };
+        //    else
+        //        angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 3.5f, 7.5f, 11.0f, 4.5f, 8.5f, 0.5f, 11.5f, 6.5f, 10.5f, 5.0f, 2.5f, 9.5f, 7.0f, 5.5f, 1.5f, 9.0f, 3.0f, 6.0f };
 
-        }
+        //}
+
+        // since there was a bug with an old order appearing, i leave only new order for all trackers.
+        // And for EyeTribe it can be fixed later to have an old order. Or it is possible to use older version for this tracker.
+
+        if (!BackGround.activeSelf)
+            angles = new List<float> { 12.0f, 10.0f, 4.0f, 2.0f, 8.0f, 11.0f, 8.5f, 4.5f, 1.0f, 7.5f, 3.5f, 11.5f, 0.5f, 9.5f, 1.5f, 2.5f, 10.5f, 5.5f, 7.0f, 3.0f, 9.0f, 5.0f, 6.5f, 6.0f };
+        else
+            angles = new List<float> { 12.0f, 2.0f, 8.0f, 10.0f, 4.0f, 1.0f, 3.5f, 7.5f, 11.0f, 4.5f, 8.5f, 0.5f, 11.5f, 6.5f, 10.5f, 5.0f, 2.5f, 9.5f, 7.0f, 5.5f, 1.5f, 9.0f, 3.0f, 6.0f };
 
 
         //1st version bells
